@@ -1,0 +1,16 @@
+call_id,audio_source,channel,transcript_raw,timestamp
+call_6b9ada89,mic,call,Hello. Am I audible?,2026-01-25 16:56:35
+call_db48732f,mic,call,I'm calling about my medical claim.,2026-01-25 16:56:44
+call_f1755a63,mic,call,My father was admitted last night and the hospital is asking for payment today.,2026-01-25 16:56:52
+call_1f7e09c1,mic,call,"Have committed all documents already, but the claim still shows pending. This is Jolly Urgent. I need help right now.",2026-01-25 16:57:00
+call_457b1c6b,mic,call,I can't wait another day.,2026-01-25 16:57:03
+call_cc1d8dbf,mic,call,"Hi, listen. This is about my accident.",2026-01-25 16:57:16
+call_10d48766,mic,call,The garage won't release the vehicle unless the insurance approves it. Have been calling since morning and no one has called back. This is getting really stressful. Can you please escalate this immediately?,2026-01-25 16:57:29
+call_6cff99e6,mic,call,"Hi, I'm calling to check the status of my claim. It's been over 10 days now and I haven't received any update. Every time I call, I'm told it's under processing. The delay is early frustrating. I just want to know when this will be resolved.",2026-01-25 16:57:48
+call_e05aa7e9,mic,call,"Hello, I received a message saying my claim was partially approved. What does it mean? No one has explained this to me yet. Can someone please clarify the reason?",2026-01-25 16:58:03
+call_bce96653,mic,call,"Hi, I just wanted to check something about my policy. Does it cover diagnosis test done before hospitalization? I'm planning a procedure next month and wanted to confirm this.",2026-01-25 16:58:21
+call_e1c3b3b5,mic,call,Hello. I uploaded the required documents for my claim yesterday. I just want to confirm everything this is to see if properly. There's no urgency. I just wanted an update.,2026-01-25 16:58:32
+call_c02ad904,mic,call,"Hi, I'm calling to say thank you. My claim was resolved yesterday in the amount was credited. The support team was very helpful. I really appreciate the quick response.",2026-01-25 16:58:49
+call_4a7b2729,mic,call,This is unacceptable. I've been following up on my claim for two weeks now. No one responds properly and I keep getting automated messages. I need to speak to a supervisor immediately. This needs to be escalated.,2026-01-25 16:59:06
+call_f49bdca5,mic,call,"Hi, I get it. I understand these things take time. But my medical bills are due tomorrow and I haven't received confirmation yet. I'm not angry. I just need clarity today.",2026-01-25 16:59:21
+call_6ab632a3,mic,call,"Hello, I'm a bit confused about the claim status. The app shows a proof, but I haven't received any payment yet. Could you please explain what this means?",2026-01-25 16:59:34
