@@ -3,6 +3,7 @@ import csv
 from datetime import datetime
 import uuid
 import os
+from sentiment1 import update_and_check
 
 CSV_FILE = "call_transcripts.csv"
 
@@ -20,8 +21,15 @@ if not os.path.exists(CSV_FILE):
 
 def on_update(text):
     print(f"\rTranscribing: {text}", end="", flush=True)
+    sentiment, score, escalate = update_and_check(text)
 
+    if sentiment:
+        print(f"\n📊 Sentiment: {sentiment} ({score})")
+
+    if escalate:
+        print("🚨 Supervisor alert triggered")
 def on_finalized(text):
+    
     call_id = f"call_{uuid.uuid4().hex[:8]}"
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
