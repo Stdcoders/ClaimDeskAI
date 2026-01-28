@@ -1,16 +1,44 @@
 call_id,audio_source,channel,transcript_raw,timestamp
-call_6b9ada89,mic,call,Hello. Am I audible?,2026-01-25 16:56:35
-call_db48732f,mic,call,I'm calling about my medical claim.,2026-01-25 16:56:44
-call_f1755a63,mic,call,My father was admitted last night and the hospital is asking for payment today.,2026-01-25 16:56:52
-call_1f7e09c1,mic,call,"Have committed all documents already, but the claim still shows pending. This is Jolly Urgent. I need help right now.",2026-01-25 16:57:00
-call_457b1c6b,mic,call,I can't wait another day.,2026-01-25 16:57:03
-call_cc1d8dbf,mic,call,"Hi, listen. This is about my accident.",2026-01-25 16:57:16
-call_10d48766,mic,call,The garage won't release the vehicle unless the insurance approves it. Have been calling since morning and no one has called back. This is getting really stressful. Can you please escalate this immediately?,2026-01-25 16:57:29
-call_6cff99e6,mic,call,"Hi, I'm calling to check the status of my claim. It's been over 10 days now and I haven't received any update. Every time I call, I'm told it's under processing. The delay is early frustrating. I just want to know when this will be resolved.",2026-01-25 16:57:48
-call_e05aa7e9,mic,call,"Hello, I received a message saying my claim was partially approved. What does it mean? No one has explained this to me yet. Can someone please clarify the reason?",2026-01-25 16:58:03
-call_bce96653,mic,call,"Hi, I just wanted to check something about my policy. Does it cover diagnosis test done before hospitalization? I'm planning a procedure next month and wanted to confirm this.",2026-01-25 16:58:21
-call_e1c3b3b5,mic,call,Hello. I uploaded the required documents for my claim yesterday. I just want to confirm everything this is to see if properly. There's no urgency. I just wanted an update.,2026-01-25 16:58:32
-call_c02ad904,mic,call,"Hi, I'm calling to say thank you. My claim was resolved yesterday in the amount was credited. The support team was very helpful. I really appreciate the quick response.",2026-01-25 16:58:49
-call_4a7b2729,mic,call,This is unacceptable. I've been following up on my claim for two weeks now. No one responds properly and I keep getting automated messages. I need to speak to a supervisor immediately. This needs to be escalated.,2026-01-25 16:59:06
-call_f49bdca5,mic,call,"Hi, I get it. I understand these things take time. But my medical bills are due tomorrow and I haven't received confirmation yet. I'm not angry. I just need clarity today.",2026-01-25 16:59:21
-call_6ab632a3,mic,call,"Hello, I'm a bit confused about the claim status. The app shows a proof, but I haven't received any payment yet. Could you please explain what this means?",2026-01-25 16:59:34
+call_b4e90c84,mic,call,"I just want to confirm what all is covered into my motor insurance policy, especially for accidental damage.",2026-01-26 22:30:24
+call_42eca1c2,mic,call,I find the motor claim a few days ago. I'm calling to check the current status.,2026-01-26 22:30:34
+call_e80c13ab,mic,call,Can you tell me if there is a cashless garage near my location for vehicle repairs?,2026-01-26 22:30:45
+call_2f2ce504,mic,call,Hello. I met with an accident today. The car is damaged and I am not sure what to do next. Please guide me.,2026-01-26 22:31:00
+call_80bee8c6,mic,call,"My vehicle is lying at the garage, but the survey has not contacted me yet. I am really worried about delays.",2026-01-26 22:31:11
+call_9ee4378b,mic,call,"My policies, expiring soon and my claim is still in progress. Will this affect my statement?",2026-01-26 22:31:21
+call_a3cf1090,mic,call,"I received a claim amount, but there are reductions mentioned that I don't understand. Can you explain?",2026-01-26 22:31:34
+call_693e2424,mic,call,The garage is asking for an FIR. Is it mandatory even for a small accident?,2026-01-26 22:31:43
+call_ae8781d6,mic,call,I thought I had zero depreciation cover. Why is depreciation still being deducted?,2026-01-26 22:31:52
+call_98a0a06f,mic,call,It's been over two weeks since I fired my claim and there's no proper update. This is really frustrating.,2026-01-26 22:32:04
+call_b6fc7538,mic,call,My motor claim was rejected without any clear explanation. This is unacceptable. I need answers.,2026-01-26 22:32:14
+call_cbd3f886,mic,call,"The garage says, repairs can't start without approval, and I'm stuck without my car. Why is this taking so long?",2026-01-26 22:32:24
+call_a0785e39,mic,call,"I expected most of my repair costs to be covered, but the settlement amount is much lower than I anticipated.",2026-01-26 22:32:36
+call_6ee9f75a,mic,call,I am really disappointed to hear that my no claim bonus will be affected just for this minus minor claim.,2026-01-26 22:32:46
+call_4d8df8b6,mic,call,I received a message saying my claim has been approved. I just want to confirm the next steps.,2026-01-26 22:32:56
+call_03644464,mic,call,The garage informed me that repairs will be cashless. I just want to double check if everything is in order.,2026-01-26 22:33:06
+call_2014b6b4,mic,call,"I mean, towering assistance immediately, my car has broken down after the accident and is blocking traffic.",2026-01-26 22:33:17
+call_8c47ce8e,mic,call,The garage says my vehicle might get total loss. I need urgent clarity on what this means for my policy.,2026-01-26 22:33:28
+call_c611fa09,mic,call,Time was just calling to check if my policy has engine protection cover.,2026-01-26 22:35:08
+call_6fcee106,mic,call,Is there any limit on the number of claims I can file in one policy year?,2026-01-26 22:35:17
+call_cad66948,mic,call,I just want to confirm that my motor insurance policy is currently active.,2026-01-26 22:35:26
+call_a3aff547,mic,call,Does my policy cover damage caused you to flooding or water logging?,2026-01-26 22:35:35
+call_f898edb4,mic,call,I want to know the list of documents required to file a motor insurance claim.,2026-01-26 22:35:44
+call_fd9473fd,mic,call,There is my policy include rosal roadside assistance too.,2026-01-26 22:35:50
+call_5a304b91,mic,call,My vehicle is still at the garage and I haven't received any update. I'm concerned about delays.,2026-01-26 22:36:03
+call_4d9b7387,mic,call,"My policy is expanding soon, but my claim hasn't been settled yet. Will this create a problem?",2026-01-26 22:36:14
+call_4d123f9b,mic,call,I am unsure whether toying charges will be covered in my policy.,2026-01-26 22:36:24
+call_17524367,mic,call,"My policy mentions IDV, but I don't know how it affects my claim amount.",2026-01-26 22:36:34
+call_e6266fa0,mic,call,I see multiple deductions listed in my settlement summary and I don't understand them.,2026-01-26 22:36:43
+call_be9868e0,mic,call,It's been more than two weeks. They still don't have a clear update on my claim. This is frustrating.,2026-01-26 22:36:53
+call_4ebd2982,mic,call,"My vehicle is lying on use because I prove it at a late, who is responsible for this?",2026-01-26 22:37:04
+call_000e3edf,mic,call,Every time I call I get a different answer. This is very irritating.,2026-01-26 22:37:11
+call_5253afea,mic,call,I have submitted all documents here that I keep getting reminders. This is unacceptable.,2026-01-26 22:37:19
+call_c5b412c7,mic,call,I was promised to call back that never happened. This is very disappointing.,2026-01-26 22:37:29
+call_5b395ee0,mic,call,I am extremely unhappy with how slow the claim processes.,2026-01-26 22:37:36
+call_b0a8a7bf,mic,call,I don't understand why policy exclusions are being applied after collecting premium.,2026-01-26 22:37:45
+call_761032e7,mic,call,I have submitted all documents here that I keep getting reminders. This is unacceptable.,2026-01-26 22:37:54
+call_7dafbf7a,mic,call,I'm not satisfied with the explanation provided for the deductions.,2026-01-26 22:38:07
+call_b1966d75,mic,call,I feel the policy benefits for not clearly explained at the time of purchase.,2026-01-26 22:38:15
+call_1f15aedd,mic,call,I received confirmation that my claim is approved. Thank you for the update.,2026-01-26 22:38:24
+call_b2cf5701,mic,call,The cashless repair process was smooth and my vehicle has been delivered. I just wanted to confirm closure.,2026-01-26 22:38:34
+call_64bee5b4,mic,call,The survey report mentions where and where. What does that mean for my claim?,2026-01-26 22:38:47
+call_f367e6e5,mic,call,I do not understand the difference between cashless and reimbursement claims.,2026-01-26 22:38:58
