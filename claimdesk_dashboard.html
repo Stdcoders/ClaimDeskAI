@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ClaimDesk AI — Agent Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
+<style>
+  :root {
+    --bg:       #0a0e1a;
+    --surface:  #111827;
+    --surface2: #1a2235;
+    --border:   #1e2d45;
+    --accent:   #00d4ff;
+    --accent2:  #ff6b35;
+    --green:    #00e676;
+    --red:      #ff3d57;
+    --yellow:   #ffd600;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --mono:     'IBM Plex Mono', monospace;
+    --sans:     'IBM Plex Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Top bar */
+  .topbar {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .logo span { color: var(--text); }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+  }
+  .topbar-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
+  .stat-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .stat-pill .val { color: var(--accent); font-weight: 600; }
+
+  /* Main grid */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    height: calc(100vh - 52px);
+  }
+  .panel {
+    background: var(--bg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel-header {
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .panel-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-badge {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 2px 8px;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--accent);
+  }
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  /* Live call */
+  .call-active {
+    border-left: 2px solid var(--green);
+  }
+  .call-banner {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .call-timer {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .caller-num {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .direction-badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-family: var(--mono);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .dir-inbound  { background: #00d4ff22; color: var(--accent); border: 1px solid #00d4ff44; }
+  .dir-outbound { background: #ff6b3522; color: var(--accent2); border: 1px solid #ff6b3544; }
+
+  .transcript-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.7;
+    min-height: 80px;
+    color: var(--text);
+    word-break: break-word;
+  }
+  .transcript-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: var(--accent);
+    animation: blink 1s infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .no-call {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+    color: var(--muted);
+  }
+  .no-call-icon { font-size: 2.5rem; opacity: 0.3; }
+  .no-call-text { font-size: 0.8rem; }
+
+  /* Outbound form */
+  .outbound-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .input-dark {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    outline: none;
+  }
+  .input-dark:focus { border-color: var(--accent); }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-accent { background: var(--accent); color: var(--bg); }
+  .btn-accent:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-sm { padding: 4px 10px; font-size: 0.65rem; }
+
+  /* Analysis cards */
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .metric-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .metric-conf {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .conf-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* Intent colors */
+  .intent-color   { color: #a78bfa; }
+  .urgency-crit   { color: var(--red); }
+  .urgency-high   { color: var(--accent2); }
+  .urgency-med    { color: var(--yellow); }
+  .urgency-low    { color: var(--green); }
+  .sent-neg       { color: var(--red); }
+  .sent-neu       { color: var(--muted); }
+  .sent-pos       { color: var(--green); }
+
+  /* RAG panel */
+  .rag-query {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    padding: 8px 10px;
+    background: var(--surface2);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border-left: 2px solid var(--accent);
+  }
+  .rag-answer {
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+  .source-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+  .source-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .source-name {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .score-badge {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--green);
+    background: #00e67615;
+    border: 1px solid #00e67630;
+    border-radius: 10px;
+    padding: 1px 6px;
+  }
+  .source-text {
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* Follow-up scheduler */
+  .followup-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .followup-item:hover { border-color: var(--accent); }
+  .followup-item.overdue { border-color: var(--red); background: #ff3d5708; }
+  .followup-item.auto    { border-color: var(--green); background: #00e67608; }
+  .fu-left { flex: 1; min-width: 0; }
+  .fu-case  { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); margin-bottom: 3px; }
+  .fu-intent { font-size: 0.8rem; font-weight: 500; margin-bottom: 2px; }
+  .fu-meta  { font-size: 0.7rem; color: var(--muted); }
+  .fu-time  { font-family: var(--mono); font-size: 0.68rem; color: var(--yellow); }
+  .fu-auto  { font-family: var(--mono); font-size: 0.65rem; color: var(--green); }
+  .fu-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .urgency-chip {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+
+  /* Analytics */
+  .analytics-top {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .kpi-val {
+    font-family: var(--mono);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .kpi-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+  .kpi-alert { color: var(--red) !important; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+  }
+  .chart-title { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+
+  /* Case history */
+  .case-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .case-row:hover { border-color: var(--accent); }
+  .case-ref  { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); min-width: 120px; }
+  .case-num  { font-size: 0.78rem; color: var(--muted); flex: 1; }
+  .case-status {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.62rem;
+    font-family: var(--mono);
+    font-weight: 600;
+  }
+  .st-open     { background: #00d4ff18; color: var(--accent); border: 1px solid #00d4ff33; }
+  .st-progress { background: #ffd60018; color: var(--yellow); border: 1px solid #ffd60033; }
+  .st-resolved { background: #00e67618; color: var(--green); border: 1px solid #00e67633; }
+  .st-closed   { background: #64748b18; color: var(--muted); border: 1px solid #64748b33; }
+
+  /* Notification toast */
+  .toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    min-width: 260px;
+    animation: slideIn 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.success { border-color: var(--green); }
+  .toast.warning { border-color: var(--yellow); }
+  .toast.error   { border-color: var(--red); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: 24px;
+    font-size: 0.78rem;
+  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+const { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } = Recharts;
+
+const API = "http://localhost:8000";
+const WS_URL = "ws://localhost:8000/ws/0";
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+const apiFetch = (path, opts={}) => fetch(API + path, opts).then(r => r.json());
+
+const urgencyColor = u => ({ Critical:"#ff3d57", High:"#ff6b35", Medium:"#ffd600", Low:"#00e676" }[u] || "#64748b");
+const sentColor    = s => ({ Negative:"#ff3d57", Neutral:"#64748b", Positive:"#00e676" }[s] || "#64748b");
+const statusClass  = s => ({ Open:"st-open", "In Progress":"st-progress", Resolved:"st-resolved", Closed:"st-closed" }[s] || "st-open");
+
+function useInterval(cb, delay) {
+  const saved = useRef(cb);
+  useEffect(() => { saved.current = cb; }, [cb]);
+  useEffect(() => {
+    if (!delay) return;
+    const id = setInterval(() => saved.current(), delay);
+    return () => clearInterval(id);
+  }, [delay]);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function ToastContainer({ toasts }) {
+  return (
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast ${t.type}`}>
+          <span>{t.icon}</span>
+          <span>{t.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Live Call Panel ───────────────────────────────────────────────────────────
+function LiveCallPanel({ activeCall, onOutbound, onEndCall }) {
+  const [toNumber, setToNumber]   = useState("");
+  const [seconds,  setSeconds]    = useState(0);
+
+  useInterval(() => {
+    if (activeCall) setSeconds(s => s + 1);
+  }, 1000);
+
+  useEffect(() => {
+    if (activeCall) setSeconds(0);
+  }, [activeCall?.call_id]);
+
+  const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+
+  return (
+    <div className={`panel ${activeCall ? "call-active" : ""}`}>
+      <div className="panel-header">
+        <span className="panel-title">📞 Live Call</span>
+        {activeCall && <div className="status-dot" style={{marginLeft:6}} />}
+        {activeCall && <span className="panel-badge">LIVE</span>}
+      </div>
+      <div className="panel-body">
+        {activeCall ? (
+          <>
+            <div className="call-banner">
+              <span className="call-timer">{fmt(seconds)}</span>
+              <div>
+                <div className="caller-num">{activeCall.caller_number || activeCall.to_number}</div>
+                <div style={{fontSize:"0.65rem",color:"var(--muted)"}}>
+                  Case: {activeCall.case_ref || "—"}
+                </div>
+              </div>
+              <span className={`direction-badge dir-${activeCall.direction}`}>
+                {activeCall.direction}
+              </span>
+            </div>
+
+            <div style={{marginBottom:6,fontSize:"0.7rem",color:"var(--muted)",fontFamily:"var(--mono)"}}>
+              TRANSCRIPT
+            </div>
+            <div className="transcript-area">
+              {activeCall.transcript || "Waiting for speech..."}
+              {!activeCall.transcript && <span className="transcript-cursor"/>}
+            </div>
+
+            <div style={{marginTop:10,display:"flex",gap:8}}>
+              <button className="btn btn-danger btn-sm" onClick={() => onEndCall(activeCall.call_id)}>
+                ■ End Call
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="no-call">
+              <div className="no-call-icon">📵</div>
+              <div className="no-call-text">No active call</div>
+              <div style={{fontSize:"0.7rem",color:"var(--muted)"}}>Inbound calls appear automatically</div>
+            </div>
+            <hr className="divider" />
+            <div style={{fontSize:"0.7rem",color:"var(--muted)",marginBottom:6,fontFamily:"var(--mono)"}}>
+              OUTBOUND CALLBACK
+            </div>
+            <div className="outbound-form">
+              <input
+                className="input-dark"
+                placeholder="+91xxxxxxxxxx"
+                value={toNumber}
+                onChange={e => setToNumber(e.target.value)}
+              />
+              <button className="btn btn-accent" onClick={() => { onOutbound(toNumber); setToNumber(""); }}>
+                Call
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Analysis Panel ────────────────────────────────────────────────────────────
+function AnalysisPanel({ call }) {
+  if (!call || !call.intent) {
+    return (
+      <div className="panel">
+        <div className="panel-header"><span className="panel-title">🧠 Analysis</span></div>
+        <div className="panel-body">
+          <div className="empty-state">Analysis appears here during an active call</div>
+        </div>
+      </div>
+    );
+  }
+
+  const uc = urgencyColor(call.urgency);
+  const sc = sentColor(call.sentiment);
+
+  const cards = [
+    { label:"INTENT",    value: call.intent?.replace(/_/g," "), conf: call.conf_intent,    color:"#a78bfa" },
+    { label:"URGENCY",   value: call.urgency,                   conf: call.conf_urgency,   color: uc },
+    { label:"SENTIMENT", value: call.sentiment,                 conf: call.conf_sentiment, color: sc },
+    { label:"SLA",
+      value: ({Critical:"2 hrs",High:"6 hrs",Medium:"24 hrs",Low:"48 hrs"}[call.urgency] || "—"),
+      conf: 1, color:"#00d4ff" },
+  ];
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">🧠 Analysis</span>
+        {call.call_id && <span className="panel-badge">Call #{call.call_id}</span>}
+      </div>
+      <div className="panel-body">
+        <div className="analysis-grid">
+          {cards.map(c => (
+            <div className="metric-card" key={c.label}>
+              <div className="metric-label">{c.label}</div>
+              <div className="metric-value" style={{color:c.color}}>{c.value || "—"}</div>
+              <div className="metric-conf">{c.conf ? `${Math.round(c.conf*100)}% confidence` : ""}</div>
+              {c.conf < 1 && (
+                <div className="conf-bar">
+                  <div className="conf-fill" style={{width:`${(c.conf||0)*100}%`,background:c.color}}/>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Knowledge Base Panel ──────────────────────────────────────────────────────
+function KnowledgePanel({ call }) {
+  if (!call?.rag_answer) {
+    return (
+      <div className="panel">
+        <div className="panel-header"><span className="panel-title">📚 Knowledge Base</span></div>
+        <div className="panel-body">
+          <div className="empty-state">RAG results appear here when a call is active</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">📚 Knowledge Base</span>
+        <span className="panel-badge">{call.sources?.length || 0} sources</span>
+      </div>
+      <div className="panel-body">
+        {call.transcript && (
+          <div className="rag-query">❝ {call.transcript.slice(0,120)}{call.transcript.length>120?"…":""}</div>
+        )}
+        <div className="rag-answer">{call.rag_answer}</div>
+        {call.sources?.length > 0 && (
+          <>
+            <div style={{fontSize:"0.65rem",color:"var(--muted)",fontFamily:"var(--mono)",marginBottom:6}}>
+              RETRIEVED SOURCES
+            </div>
+            {call.sources.map((s,i) => (
+              <div className="source-card" key={i}>
+                <div className="source-header">
+                  <span className="source-name">📄 {s.source_pdf}</span>
+                  <span className="score-badge">{(s.score*100).toFixed(0)}%</span>
+                </div>
+                <div className="source-text">{s.text?.slice(0,180)}…</div>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Follow-up Scheduler Panel ─────────────────────────────────────────────────
+function SchedulerPanel({ followups, onUpdateStatus, addToast }) {
+  const now = new Date();
+  const sorted = [...followups].sort((a,b) => new Date(a.callback_dt) - new Date(b.callback_dt));
+
+  const isOverdue = fu => fu.status === "Pending" && new Date(fu.callback_dt) < now;
+
+  const handleResolve = async (id) => {
+    await apiFetch(`/api/followups/${id}`, {
+      method: "PATCH",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({status:"Resolved"})
+    });
+    onUpdateStatus(id, "Resolved");
+    addToast("Follow-up resolved ✓", "success", "✅");
+  };
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">📅 Follow-up Queue</span>
+        <span className="panel-badge">{followups.filter(f=>f.status==="Pending").length} pending</span>
+      </div>
+      <div className="panel-body">
+        {sorted.length === 0 && <div className="empty-state">No follow-ups scheduled</div>}
+        {sorted.map(fu => (
+          <div key={fu.id} className={`followup-item ${isOverdue(fu)?"overdue":""} ${fu.auto_resolved?"auto":""}`}>
+            <div className="fu-left">
+              <div className="fu-case">{fu.case_ref} · {fu.caller_number}</div>
+              <div className="fu-intent">{fu.intent?.replace(/_/g," ") || "—"}</div>
+              <div className="fu-meta">{fu.transcript_summary?.slice(0,80)}…</div>
+              {fu.auto_resolved
+                ? <div className="fu-auto">⚡ Auto-resolved: {fu.auto_action}</div>
+                : <div className="fu-time">
+                    📅 {fu.callback_dt?.slice(0,16) || "—"}
+                    {isOverdue(fu) && <span style={{color:"var(--red)",marginLeft:6}}>OVERDUE</span>}
+                  </div>
+              }
+            </div>
+            <div className="fu-actions">
+              <span className="urgency-chip" style={{
+                background: urgencyColor(fu.urgency)+"22",
+                color: urgencyColor(fu.urgency),
+                border: `1px solid ${urgencyColor(fu.urgency)}44`
+              }}>{fu.urgency}</span>
+              {fu.status === "Pending" && !fu.auto_resolved && (
+                <button className="btn btn-accent btn-sm" onClick={() => handleResolve(fu.id)}>
+                  Resolve
+                </button>
+              )}
+              {fu.status === "Resolved" && (
+                <span style={{fontSize:"0.65rem",color:"var(--green)"}}>✓ Done</span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Analytics Panel ───────────────────────────────────────────────────────────
+function AnalyticsPanel({ analytics }) {
+  if (!analytics) return (
+    <div className="panel">
+      <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
+      <div className="panel-body"><div className="empty-state">Loading...</div></div>
+    </div>
+  );
+
+  const COLORS = ["#00d4ff","#a78bfa","#ff6b35","#00e676","#ffd600","#ff3d57","#38bdf8","#f472b6","#34d399","#fb923c"];
+
+  const kpis = [
+    { label:"Total Calls",     val: analytics.total_calls,       alert: false },
+    { label:"Open Cases",      val: analytics.open_cases,        alert: analytics.open_cases > 20 },
+    { label:"Pending FU",      val: analytics.pending_followups, alert: analytics.pending_followups > 10 },
+    { label:"Auto Resolved",   val: analytics.auto_resolved,     alert: false },
+  ];
+
+  return (
+    <div className="panel">
+      <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
+      <div className="panel-body">
+        <div className="analytics-top">
+          {kpis.map(k => (
+            <div className="kpi-card" key={k.label}>
+              <div className={`kpi-val ${k.alert?"kpi-alert":""}`}>{k.val ?? "—"}</div>
+              <div className="kpi-label">{k.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="charts-row">
+          <div className="chart-wrap">
+            <div className="chart-title">Intent Distribution</div>
+            <ResponsiveContainer width="100%" height={130}>
+              <BarChart data={analytics.intent_dist?.map(d=>({name:d.intent?.split("_")[0], cnt:d.cnt}))}>
+                <XAxis dataKey="name" tick={{fontSize:9,fill:"#64748b"}} />
+                <YAxis tick={{fontSize:9,fill:"#64748b"}} width={20}/>
+                <Tooltip contentStyle={{background:"#111827",border:"1px solid #1e2d45",fontSize:11}}/>
+                <Bar dataKey="cnt" fill="#00d4ff" radius={[3,3,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="chart-wrap">
+            <div className="chart-title">Sentiment</div>
+            <ResponsiveContainer width="100%" height={130}>
+              <PieChart>
+                <Pie data={analytics.sentiment_dist?.map(d=>({name:d.sentiment,value:d.cnt}))}
+                  dataKey="value" cx="50%" cy="50%" outerRadius={50} innerRadius={25}>
+                  {analytics.sentiment_dist?.map((d,i) => (
+                    <Cell key={i} fill={sentColor(d.sentiment)}/>
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{background:"#111827",border:"1px solid #1e2d45",fontSize:11}}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Case History Panel ────────────────────────────────────────────────────────
+function CaseHistoryPanel({ cases }) {
+  const [search, setSearch] = useState("");
+  const filtered = cases.filter(c =>
+    c.case_ref?.toLowerCase().includes(search.toLowerCase()) ||
+    c.caller_number?.includes(search)
+  );
+
+  return (
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">🗂 Case History</span>
+        <span className="panel-badge">{cases.length} cases</span>
+      </div>
+      <div className="panel-body">
+        <input
+          className="input-dark"
+          style={{width:"100%",marginBottom:10}}
+          placeholder="Search by case ref or number..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        {filtered.length === 0 && <div className="empty-state">No cases found</div>}
+        {filtered.map(c => (
+          <div className="case-row" key={c.id}>
+            <span className="case-ref">{c.case_ref}</span>
+            <div style={{flex:1,minWidth:0}}>
+              <div className="case-num">{c.caller_number}</div>
+              <div style={{fontSize:"0.68rem",color:"var(--muted)"}}>
+                {c.last_intent?.replace(/_/g," ") || "—"} · {c.total_calls} call{c.total_calls!==1?"s":""}
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+              <span className={`case-status ${statusClass(c.status)}`}>{c.status}</span>
+              <span style={{
+                fontSize:"0.62rem",fontFamily:"var(--mono)",
+                color: sentColor(c.last_sentiment), opacity:0.8
+              }}>{c.last_sentiment || ""}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── App root ──────────────────────────────────────────────────────────────────
+function App() {
+  const [activeCall,  setActiveCall]  = useState(null);
+  const [followups,   setFollowups]   = useState([]);
+  const [analytics,   setAnalytics]   = useState(null);
+  const [cases,       setCases]       = useState([]);
+  const [toasts,      setToasts]      = useState([]);
+  const wsRef = useRef(null);
+
+  const addToast = useCallback((message, type="success", icon="ℹ️") => {
+    const id = Date.now();
+    setToasts(t => [...t, { id, message, type, icon }]);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
+  }, []);
+
+  // Load initial data
+  const loadData = useCallback(async () => {
+    try {
+      const [fu, an, cs] = await Promise.all([
+        apiFetch("/api/followups"),
+        apiFetch("/api/analytics"),
+        apiFetch("/api/cases"),
+      ]);
+      setFollowups(fu);
+      setAnalytics(an);
+      setCases(cs);
+    } catch(e) {
+      console.error("Data load error:", e);
+    }
+  }, []);
+
+  useEffect(() => { loadData(); }, []);
+  useInterval(loadData, 15000);  // refresh every 15s
+
+  // WebSocket for live events
+  useEffect(() => {
+    const connect = () => {
+      const ws = new WebSocket(WS_URL);
+      wsRef.current = ws;
+
+      ws.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+
+        if (data.event === "new_call") {
+          setActiveCall({ ...data, transcript:"", rag_answer:"", sources:[] });
+          addToast(`New ${data.direction} call from ${data.caller_number || data.to_number}`, "success", "📞");
+        }
+
+        if (data.event === "call_update") {
+          setActiveCall(prev => prev ? { ...prev, ...data } : null);
+        }
+
+        if (data.event === "call_status" && ["completed","failed","no-answer"].includes(data.status)) {
+          setActiveCall(null);
+          addToast(`Call ${data.status} (${data.duration}s)`, "warning", "📵");
+          loadData();
+        }
+
+        if (data.event === "followup_created") {
+          loadData();
+          if (data.auto_resolved) {
+            addToast(`Auto-resolved: ${data.message}`, "success", "⚡");
+          } else {
+            addToast(`Follow-up scheduled: ${data.callback_dt}`, "warning", "📅");
+          }
+        }
+      };
+
+      ws.onclose = () => setTimeout(connect, 3000);  // reconnect
+    };
+    connect();
+    return () => wsRef.current?.close();
+  }, []);
+
+  const handleOutbound = async (number) => {
+    if (!number) return;
+    try {
+      await apiFetch("/api/call/outbound", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ to_number: number })
+      });
+      addToast(`Outbound call initiated to ${number}`, "success", "📤");
+    } catch(e) {
+      addToast("Failed to initiate call", "error", "❌");
+    }
+  };
+
+  const handleEndCall = async (callId) => {
+    const call = await apiFetch(`/api/calls/${callId}`);
+    if (call?.call_sid) {
+      await apiFetch("/api/call/end", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({call_sid: call.call_sid})
+      });
+    }
+    setActiveCall(null);
+  };
+
+  const handleUpdateStatus = (id, status) => {
+    setFollowups(prev => prev.map(f => f.id === id ? {...f, status} : f));
+  };
+
+  const overdue = followups.filter(f => f.status==="Pending" && new Date(f.callback_dt) < new Date()).length;
+
+  return (
+    <>
+      <div className="topbar">
+        <span className="logo">CLAIM<span>DESK</span> AI</span>
+        <div className="status-dot"/>
+        <div className="topbar-right">
+          {overdue > 0 && (
+            <div className="stat-pill" style={{borderColor:"#ff3d5744"}}>
+              <span style={{color:"var(--red)"}}>⚠</span>
+              <span className="val" style={{color:"var(--red)"}}>{overdue}</span>
+              <span style={{color:"var(--muted)"}}>overdue</span>
+            </div>
+          )}
+          <div className="stat-pill">
+            <span>calls</span><span className="val">{analytics?.total_calls ?? "—"}</span>
+          </div>
+          <div className="stat-pill">
+            <span>cases</span><span className="val">{analytics?.open_cases ?? "—"} open</span>
+          </div>
+          <div className="stat-pill" style={{borderColor:"#00e67644"}}>
+            <span>⚡</span>
+            <span className="val" style={{color:"var(--green)"}}>{analytics?.auto_resolved ?? 0}</span>
+            <span style={{color:"var(--muted)"}}>auto-resolved</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid">
+        <LiveCallPanel  activeCall={activeCall} onOutbound={handleOutbound} onEndCall={handleEndCall} />
+        <AnalysisPanel  call={activeCall} />
+        <KnowledgePanel call={activeCall} />
+        <SchedulerPanel followups={followups} onUpdateStatus={handleUpdateStatus} addToast={addToast} />
+        <AnalyticsPanel analytics={analytics} />
+        <CaseHistoryPanel cases={cases} />
+      </div>
+
+      <ToastContainer toasts={toasts} />
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

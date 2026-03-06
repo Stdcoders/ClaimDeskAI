@@ -1,17 +1,15 @@
-PyAudio==0.2.14
-faster-whisper==1.1.1
-pvporcupine==1.9.5
-webrtcvad-wheels==2.0.14
-halo==0.0.31
+# ClaimDesk AI — Backend Requirements
+fastapi
+uvicorn[standard]
+python-dotenv
+twilio
+faster-whisper
+transformers
 torch
-torchaudio
-scipy==1.15.2
-openwakeword>=0.4.0
-websockets==15.0.1
-websocket-client==1.8.0
-soundfile==0.13.1
-
-
-
-# For CUDA 11.8
-pip install torch==2.5.1+cu118 torchaudio==2.5.1 --index-url https://download.pytorch.org/whl/cu118
+chromadb
+sentence-transformers
+huggingface_hub
+rank_bm25
+numpy
+scipy
+pydantic
