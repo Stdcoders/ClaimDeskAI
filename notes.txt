@@ -1,7 +1,0 @@
-You want memory of past questions
-
-You want domain-specific intelligence
-
-You may replace OpenAI with HuggingFace
-
-You may add RAG module
