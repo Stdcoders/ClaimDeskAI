@@ -80,6 +80,7 @@ def init_db():
             auto_resolved      INTEGER DEFAULT 0,
             auto_action        TEXT,
             status             TEXT DEFAULT 'Pending',
+            resolution_notes   TEXT DEFAULT '',
             created_at         TEXT DEFAULT (datetime('now','localtime')),
             resolved_at        TEXT,
             FOREIGN KEY (call_id)  REFERENCES calls(id),
@@ -183,11 +184,20 @@ def get_overdue_followups():
             "SELECT * FROM followups WHERE status='Pending' AND callback_dt <= ? ORDER BY callback_dt ASC", (now,)).fetchall()
     return [dict(r) for r in rows]
 
-def update_followup_status(followup_id, status):
+def update_followup_status(followup_id, status, notes=""):
     resolved_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S") if status == "Resolved" else None
     with get_conn() as conn:
-        conn.execute("UPDATE followups SET status=?,resolved_at=? WHERE id=?", (status, resolved_at, followup_id))
+        conn.execute(
+            "UPDATE followups SET status=?, resolved_at=?, resolution_notes=? WHERE id=?",
+            (status, resolved_at, notes, followup_id)
+        )
         conn.commit()
+        # Also add resolution_notes column if it doesn't exist (migration safety)
+        try:
+            conn.execute("ALTER TABLE followups ADD COLUMN resolution_notes TEXT DEFAULT ''")
+            conn.commit()
+        except Exception:
+            pass  # column already exists
 
 def get_all_agents():
     with get_conn() as conn:
