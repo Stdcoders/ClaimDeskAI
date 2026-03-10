@@ -1,1009 +1,1891 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ClaimDesk AI — Agent Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
-<style>
-  :root {
-    --bg:       #0a0e1a;
-    --surface:  #111827;
-    --surface2: #1a2235;
-    --border:   #1e2d45;
-    --accent:   #00d4ff;
-    --accent2:  #ff6b35;
-    --green:    #00e676;
-    --red:      #ff3d57;
-    --yellow:   #ffd600;
-    --text:     #e2e8f0;
-    --muted:    #64748b;
-    --mono:     'IBM Plex Mono', monospace;
-    --sans:     'IBM Plex Sans', sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    height: 100vh;
-    overflow: hidden;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClaimDesk AI — Agent Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 
-  /* Scrollbars */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--surface); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* Top bar */
-  .topbar {
-    height: 52px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 16px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    font-family: var(--mono);
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-  }
-  .logo span { color: var(--text); }
-  .status-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 6px var(--green);
-    animation: pulse 2s infinite;
-  }
-  @keyframes pulse {
-    0%,100% { opacity: 1; } 50% { opacity: 0.4; }
-  }
-  .topbar-right { margin-left: auto; display: flex; gap: 12px; align-items: center; }
-  .stat-pill {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .stat-pill .val { color: var(--accent); font-weight: 600; }
-
-  /* Main grid */
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 1px;
-    background: var(--border);
-    height: calc(100vh - 52px);
-  }
-  .panel {
-    background: var(--bg);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .panel-header {
-    padding: 10px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .panel-title {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .panel-badge {
-    margin-left: auto;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 2px 8px;
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--accent);
-  }
-  .panel-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px;
-  }
-
-  /* Live call */
-  .call-active {
-    border-left: 2px solid var(--green);
-  }
-  .call-banner {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .call-timer {
-    font-family: var(--mono);
-    font-size: 1.1rem;
-    color: var(--green);
-    font-weight: 600;
-  }
-  .caller-num {
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    color: var(--accent);
-  }
-  .direction-badge {
-    margin-left: auto;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.65rem;
-    font-family: var(--mono);
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  .dir-inbound  { background: #00d4ff22; color: var(--accent); border: 1px solid #00d4ff44; }
-  .dir-outbound { background: #ff6b3522; color: var(--accent2); border: 1px solid #ff6b3544; }
-
-  .transcript-area {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    line-height: 1.7;
-    min-height: 80px;
-    color: var(--text);
-    word-break: break-word;
-  }
-  .transcript-cursor {
-    display: inline-block;
-    width: 2px;
-    height: 14px;
-    background: var(--accent);
-    animation: blink 1s infinite;
-    vertical-align: middle;
-    margin-left: 2px;
-  }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-  .no-call {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100%;
-    gap: 8px;
-    color: var(--muted);
-  }
-  .no-call-icon { font-size: 2.5rem; opacity: 0.3; }
-  .no-call-text { font-size: 0.8rem; }
-
-  /* Outbound form */
-  .outbound-form {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .input-dark {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 0.8rem;
-    outline: none;
-  }
-  .input-dark:focus { border-color: var(--accent); }
-  .btn {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-accent { background: var(--accent); color: var(--bg); }
-  .btn-accent:hover { opacity: 0.85; transform: translateY(-1px); }
-  .btn-danger { background: var(--red); color: white; }
-  .btn-sm { padding: 4px 10px; font-size: 0.65rem; }
-
-  /* Analysis cards */
-  .analysis-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .metric-label {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-  .metric-value {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-  .metric-conf {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-  }
-  .conf-bar {
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 5px;
-    overflow: hidden;
-  }
-  .conf-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
-  /* Intent colors */
-  .intent-color   { color: #a78bfa; }
-  .urgency-crit   { color: var(--red); }
-  .urgency-high   { color: var(--accent2); }
-  .urgency-med    { color: var(--yellow); }
-  .urgency-low    { color: var(--green); }
-  .sent-neg       { color: var(--red); }
-  .sent-neu       { color: var(--muted); }
-  .sent-pos       { color: var(--green); }
-
-  /* RAG panel */
-  .rag-query {
-    font-family: var(--mono);
-    font-size: 0.75rem;
-    color: var(--accent);
-    padding: 8px 10px;
-    background: var(--surface2);
-    border-radius: 6px;
-    margin-bottom: 10px;
-    border-left: 2px solid var(--accent);
-  }
-  .rag-answer {
-    font-size: 0.82rem;
-    line-height: 1.6;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-  .source-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin-bottom: 6px;
-  }
-  .source-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-  .source-name {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    color: var(--accent);
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .score-badge {
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    color: var(--green);
-    background: #00e67615;
-    border: 1px solid #00e67630;
-    border-radius: 10px;
-    padding: 1px 6px;
-  }
-  .source-text {
-    font-size: 0.72rem;
-    color: var(--muted);
-    line-height: 1.5;
-  }
-
-  /* Follow-up scheduler */
-  .followup-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    transition: border-color 0.2s;
-  }
-  .followup-item:hover { border-color: var(--accent); }
-  .followup-item.overdue { border-color: var(--red); background: #ff3d5708; }
-  .followup-item.auto    { border-color: var(--green); background: #00e67608; }
-  .fu-left { flex: 1; min-width: 0; }
-  .fu-case  { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); margin-bottom: 3px; }
-  .fu-intent { font-size: 0.8rem; font-weight: 500; margin-bottom: 2px; }
-  .fu-meta  { font-size: 0.7rem; color: var(--muted); }
-  .fu-time  { font-family: var(--mono); font-size: 0.68rem; color: var(--yellow); }
-  .fu-auto  { font-family: var(--mono); font-size: 0.65rem; color: var(--green); }
-  .fu-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-  .urgency-chip {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.62rem;
-    font-family: var(--mono);
-    font-weight: 600;
-  }
-
-  /* Analytics */
-  .analytics-top {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .kpi-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    text-align: center;
-  }
-  .kpi-val {
-    font-family: var(--mono);
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-  .kpi-label { font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
-  .kpi-alert { color: var(--red) !important; }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .chart-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-  }
-  .chart-title { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
-
-  /* Case history */
-  .case-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .case-row:hover { border-color: var(--accent); }
-  .case-ref  { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); min-width: 120px; }
-  .case-num  { font-size: 0.78rem; color: var(--muted); flex: 1; }
-  .case-status {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.62rem;
-    font-family: var(--mono);
-    font-weight: 600;
-  }
-  .st-open     { background: #00d4ff18; color: var(--accent); border: 1px solid #00d4ff33; }
-  .st-progress { background: #ffd60018; color: var(--yellow); border: 1px solid #ffd60033; }
-  .st-resolved { background: #00e67618; color: var(--green); border: 1px solid #00e67633; }
-  .st-closed   { background: #64748b18; color: var(--muted); border: 1px solid #64748b33; }
-
-  /* Notification toast */
-  .toast-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 999;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .toast {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    min-width: 260px;
-    animation: slideIn 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .toast.success { border-color: var(--green); }
-  .toast.warning { border-color: var(--yellow); }
-  .toast.error   { border-color: var(--red); }
-  @keyframes slideIn { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
-
-  .empty-state {
-    text-align: center;
-    color: var(--muted);
-    padding: 24px;
-    font-size: 0.78rem;
-  }
-  .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
-</style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
-const { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer } = Recharts;
-
-const API = "http://localhost:8000";
-const WS_URL = "ws://localhost:8000/ws/0";
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const apiFetch = (path, opts={}) => fetch(API + path, opts).then(r => r.json());
-
-const urgencyColor = u => ({ Critical:"#ff3d57", High:"#ff6b35", Medium:"#ffd600", Low:"#00e676" }[u] || "#64748b");
-const sentColor    = s => ({ Negative:"#ff3d57", Neutral:"#64748b", Positive:"#00e676" }[s] || "#64748b");
-const statusClass  = s => ({ Open:"st-open", "In Progress":"st-progress", Resolved:"st-resolved", Closed:"st-closed" }[s] || "st-open");
-
-function useInterval(cb, delay) {
-  const saved = useRef(cb);
-  useEffect(() => { saved.current = cb; }, [cb]);
-  useEffect(() => {
-    if (!delay) return;
-    const id = setInterval(() => saved.current(), delay);
-    return () => clearInterval(id);
-  }, [delay]);
-}
-
-// ── Toast ─────────────────────────────────────────────────────────────────────
-function ToastContainer({ toasts }) {
-  return (
-    <div className="toast-container">
-      {toasts.map(t => (
-        <div key={t.id} className={`toast ${t.type}`}>
-          <span>{t.icon}</span>
-          <span>{t.message}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── Live Call Panel ───────────────────────────────────────────────────────────
-function LiveCallPanel({ activeCall, onOutbound, onEndCall }) {
-  const [toNumber, setToNumber]   = useState("");
-  const [seconds,  setSeconds]    = useState(0);
-
-  useInterval(() => {
-    if (activeCall) setSeconds(s => s + 1);
-  }, 1000);
-
-  useEffect(() => {
-    if (activeCall) setSeconds(0);
-  }, [activeCall?.call_id]);
-
-  const fmt = s => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
-
-  return (
-    <div className={`panel ${activeCall ? "call-active" : ""}`}>
-      <div className="panel-header">
-        <span className="panel-title">📞 Live Call</span>
-        {activeCall && <div className="status-dot" style={{marginLeft:6}} />}
-        {activeCall && <span className="panel-badge">LIVE</span>}
-      </div>
-      <div className="panel-body">
-        {activeCall ? (
-          <>
-            <div className="call-banner">
-              <span className="call-timer">{fmt(seconds)}</span>
-              <div>
-                <div className="caller-num">{activeCall.caller_number || activeCall.to_number}</div>
-                <div style={{fontSize:"0.65rem",color:"var(--muted)"}}>
-                  Case: {activeCall.case_ref || "—"}
-                </div>
-              </div>
-              <span className={`direction-badge dir-${activeCall.direction}`}>
-                {activeCall.direction}
-              </span>
-            </div>
-
-            <div style={{marginBottom:6,fontSize:"0.7rem",color:"var(--muted)",fontFamily:"var(--mono)"}}>
-              TRANSCRIPT
-            </div>
-            <div className="transcript-area">
-              {activeCall.transcript || "Waiting for speech..."}
-              {!activeCall.transcript && <span className="transcript-cursor"/>}
-            </div>
-
-            <div style={{marginTop:10,display:"flex",gap:8}}>
-              <button className="btn btn-danger btn-sm" onClick={() => onEndCall(activeCall.call_id)}>
-                ■ End Call
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="no-call">
-              <div className="no-call-icon">📵</div>
-              <div className="no-call-text">No active call</div>
-              <div style={{fontSize:"0.7rem",color:"var(--muted)"}}>Inbound calls appear automatically</div>
-            </div>
-            <hr className="divider" />
-            <div style={{fontSize:"0.7rem",color:"var(--muted)",marginBottom:6,fontFamily:"var(--mono)"}}>
-              OUTBOUND CALLBACK
-            </div>
-            <div className="outbound-form">
-              <input
-                className="input-dark"
-                placeholder="+91xxxxxxxxxx"
-                value={toNumber}
-                onChange={e => setToNumber(e.target.value)}
-              />
-              <button className="btn btn-accent" onClick={() => { onOutbound(toNumber); setToNumber(""); }}>
-                Call
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Analysis Panel ────────────────────────────────────────────────────────────
-function AnalysisPanel({ call }) {
-  if (!call || !call.intent) {
-    return (
-      <div className="panel">
-        <div className="panel-header"><span className="panel-title">🧠 Analysis</span></div>
-        <div className="panel-body">
-          <div className="empty-state">Analysis appears here during an active call</div>
-        </div>
-      </div>
-    );
-  }
-
-  const uc = urgencyColor(call.urgency);
-  const sc = sentColor(call.sentiment);
-
-  const cards = [
-    { label:"INTENT",    value: call.intent?.replace(/_/g," "), conf: call.conf_intent,    color:"#a78bfa" },
-    { label:"URGENCY",   value: call.urgency,                   conf: call.conf_urgency,   color: uc },
-    { label:"SENTIMENT", value: call.sentiment,                 conf: call.conf_sentiment, color: sc },
-    { label:"SLA",
-      value: ({Critical:"2 hrs",High:"6 hrs",Medium:"24 hrs",Low:"48 hrs"}[call.urgency] || "—"),
-      conf: 1, color:"#00d4ff" },
-  ];
-
-  return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">🧠 Analysis</span>
-        {call.call_id && <span className="panel-badge">Call #{call.call_id}</span>}
-      </div>
-      <div className="panel-body">
-        <div className="analysis-grid">
-          {cards.map(c => (
-            <div className="metric-card" key={c.label}>
-              <div className="metric-label">{c.label}</div>
-              <div className="metric-value" style={{color:c.color}}>{c.value || "—"}</div>
-              <div className="metric-conf">{c.conf ? `${Math.round(c.conf*100)}% confidence` : ""}</div>
-              {c.conf < 1 && (
-                <div className="conf-bar">
-                  <div className="conf-fill" style={{width:`${(c.conf||0)*100}%`,background:c.color}}/>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Knowledge Base Panel ──────────────────────────────────────────────────────
-function KnowledgePanel({ call }) {
-  if (!call?.rag_answer) {
-    return (
-      <div className="panel">
-        <div className="panel-header"><span className="panel-title">📚 Knowledge Base</span></div>
-        <div className="panel-body">
-          <div className="empty-state">RAG results appear here when a call is active</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">📚 Knowledge Base</span>
-        <span className="panel-badge">{call.sources?.length || 0} sources</span>
-      </div>
-      <div className="panel-body">
-        {call.transcript && (
-          <div className="rag-query">❝ {call.transcript.slice(0,120)}{call.transcript.length>120?"…":""}</div>
-        )}
-        <div className="rag-answer">{call.rag_answer}</div>
-        {call.sources?.length > 0 && (
-          <>
-            <div style={{fontSize:"0.65rem",color:"var(--muted)",fontFamily:"var(--mono)",marginBottom:6}}>
-              RETRIEVED SOURCES
-            </div>
-            {call.sources.map((s,i) => (
-              <div className="source-card" key={i}>
-                <div className="source-header">
-                  <span className="source-name">📄 {s.source_pdf}</span>
-                  <span className="score-badge">{(s.score*100).toFixed(0)}%</span>
-                </div>
-                <div className="source-text">{s.text?.slice(0,180)}…</div>
-              </div>
-            ))}
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Follow-up Scheduler Panel ─────────────────────────────────────────────────
-function SchedulerPanel({ followups, onUpdateStatus, addToast }) {
-  const now = new Date();
-  const sorted = [...followups].sort((a,b) => new Date(a.callback_dt) - new Date(b.callback_dt));
-
-  const isOverdue = fu => fu.status === "Pending" && new Date(fu.callback_dt) < now;
-
-  const handleResolve = async (id) => {
-    await apiFetch(`/api/followups/${id}`, {
-      method: "PATCH",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({status:"Resolved"})
-    });
-    onUpdateStatus(id, "Resolved");
-    addToast("Follow-up resolved ✓", "success", "✅");
-  };
-
-  return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">📅 Follow-up Queue</span>
-        <span className="panel-badge">{followups.filter(f=>f.status==="Pending").length} pending</span>
-      </div>
-      <div className="panel-body">
-        {sorted.length === 0 && <div className="empty-state">No follow-ups scheduled</div>}
-        {sorted.map(fu => (
-          <div key={fu.id} className={`followup-item ${isOverdue(fu)?"overdue":""} ${fu.auto_resolved?"auto":""}`}>
-            <div className="fu-left">
-              <div className="fu-case">{fu.case_ref} · {fu.caller_number}</div>
-              <div className="fu-intent">{fu.intent?.replace(/_/g," ") || "—"}</div>
-              <div className="fu-meta">{fu.transcript_summary?.slice(0,80)}…</div>
-              {fu.auto_resolved
-                ? <div className="fu-auto">⚡ Auto-resolved: {fu.auto_action}</div>
-                : <div className="fu-time">
-                    📅 {fu.callback_dt?.slice(0,16) || "—"}
-                    {isOverdue(fu) && <span style={{color:"var(--red)",marginLeft:6}}>OVERDUE</span>}
-                  </div>
-              }
-            </div>
-            <div className="fu-actions">
-              <span className="urgency-chip" style={{
-                background: urgencyColor(fu.urgency)+"22",
-                color: urgencyColor(fu.urgency),
-                border: `1px solid ${urgencyColor(fu.urgency)}44`
-              }}>{fu.urgency}</span>
-              {fu.status === "Pending" && !fu.auto_resolved && (
-                <button className="btn btn-accent btn-sm" onClick={() => handleResolve(fu.id)}>
-                  Resolve
-                </button>
-              )}
-              {fu.status === "Resolved" && (
-                <span style={{fontSize:"0.65rem",color:"var(--green)"}}>✓ Done</span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── Analytics Panel ───────────────────────────────────────────────────────────
-function AnalyticsPanel({ analytics }) {
-  if (!analytics) return (
-    <div className="panel">
-      <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
-      <div className="panel-body"><div className="empty-state">Loading...</div></div>
-    </div>
-  );
-
-  const COLORS = ["#00d4ff","#a78bfa","#ff6b35","#00e676","#ffd600","#ff3d57","#38bdf8","#f472b6","#34d399","#fb923c"];
-
-  const kpis = [
-    { label:"Total Calls",     val: analytics.total_calls,       alert: false },
-    { label:"Open Cases",      val: analytics.open_cases,        alert: analytics.open_cases > 20 },
-    { label:"Pending FU",      val: analytics.pending_followups, alert: analytics.pending_followups > 10 },
-    { label:"Auto Resolved",   val: analytics.auto_resolved,     alert: false },
-  ];
-
-  return (
-    <div className="panel">
-      <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
-      <div className="panel-body">
-        <div className="analytics-top">
-          {kpis.map(k => (
-            <div className="kpi-card" key={k.label}>
-              <div className={`kpi-val ${k.alert?"kpi-alert":""}`}>{k.val ?? "—"}</div>
-              <div className="kpi-label">{k.label}</div>
-            </div>
-          ))}
-        </div>
-        <div className="charts-row">
-          <div className="chart-wrap">
-            <div className="chart-title">Intent Distribution</div>
-            <ResponsiveContainer width="100%" height={130}>
-              <BarChart data={analytics.intent_dist?.map(d=>({name:d.intent?.split("_")[0], cnt:d.cnt}))}>
-                <XAxis dataKey="name" tick={{fontSize:9,fill:"#64748b"}} />
-                <YAxis tick={{fontSize:9,fill:"#64748b"}} width={20}/>
-                <Tooltip contentStyle={{background:"#111827",border:"1px solid #1e2d45",fontSize:11}}/>
-                <Bar dataKey="cnt" fill="#00d4ff" radius={[3,3,0,0]}/>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="chart-wrap">
-            <div className="chart-title">Sentiment</div>
-            <ResponsiveContainer width="100%" height={130}>
-              <PieChart>
-                <Pie data={analytics.sentiment_dist?.map(d=>({name:d.sentiment,value:d.cnt}))}
-                  dataKey="value" cx="50%" cy="50%" outerRadius={50} innerRadius={25}>
-                  {analytics.sentiment_dist?.map((d,i) => (
-                    <Cell key={i} fill={sentColor(d.sentiment)}/>
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{background:"#111827",border:"1px solid #1e2d45",fontSize:11}}/>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Case History Panel ────────────────────────────────────────────────────────
-function CaseHistoryPanel({ cases }) {
-  const [search, setSearch] = useState("");
-  const filtered = cases.filter(c =>
-    c.case_ref?.toLowerCase().includes(search.toLowerCase()) ||
-    c.caller_number?.includes(search)
-  );
-
-  return (
-    <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">🗂 Case History</span>
-        <span className="panel-badge">{cases.length} cases</span>
-      </div>
-      <div className="panel-body">
-        <input
-          className="input-dark"
-          style={{width:"100%",marginBottom:10}}
-          placeholder="Search by case ref or number..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {filtered.length === 0 && <div className="empty-state">No cases found</div>}
-        {filtered.map(c => (
-          <div className="case-row" key={c.id}>
-            <span className="case-ref">{c.case_ref}</span>
-            <div style={{flex:1,minWidth:0}}>
-              <div className="case-num">{c.caller_number}</div>
-              <div style={{fontSize:"0.68rem",color:"var(--muted)"}}>
-                {c.last_intent?.replace(/_/g," ") || "—"} · {c.total_calls} call{c.total_calls!==1?"s":""}
-              </div>
-            </div>
-            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
-              <span className={`case-status ${statusClass(c.status)}`}>{c.status}</span>
-              <span style={{
-                fontSize:"0.62rem",fontFamily:"var(--mono)",
-                color: sentColor(c.last_sentiment), opacity:0.8
-              }}>{c.last_sentiment || ""}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── App root ──────────────────────────────────────────────────────────────────
-function App() {
-  const [activeCall,  setActiveCall]  = useState(null);
-  const [followups,   setFollowups]   = useState([]);
-  const [analytics,   setAnalytics]   = useState(null);
-  const [cases,       setCases]       = useState([]);
-  const [toasts,      setToasts]      = useState([]);
-  const wsRef = useRef(null);
-
-  const addToast = useCallback((message, type="success", icon="ℹ️") => {
-    const id = Date.now();
-    setToasts(t => [...t, { id, message, type, icon }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
-  }, []);
-
-  // Load initial data
-  const loadData = useCallback(async () => {
-    try {
-      const [fu, an, cs] = await Promise.all([
-        apiFetch("/api/followups"),
-        apiFetch("/api/analytics"),
-        apiFetch("/api/cases"),
-      ]);
-      setFollowups(fu);
-      setAnalytics(an);
-      setCases(cs);
-    } catch(e) {
-      console.error("Data load error:", e);
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1e2d45;
+      --accent: #00d4ff;
+      --accent2: #ff6b35;
+      --green: #00e676;
+      --red: #ff3d57;
+      --yellow: #ffd600;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
     }
-  }, []);
 
-  useEffect(() => { loadData(); }, []);
-  useInterval(loadData, 15000);  // refresh every 15s
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  // WebSocket for live events
-  useEffect(() => {
-    const connect = () => {
-      const ws = new WebSocket(WS_URL);
-      wsRef.current = ws;
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      height: 100vh;
+      overflow: hidden;
+    }
 
-      ws.onmessage = (e) => {
-        const data = JSON.parse(e.data);
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
 
-        if (data.event === "new_call") {
-          setActiveCall({ ...data, transcript:"", rag_answer:"", sources:[] });
-          addToast(`New ${data.direction} call from ${data.caller_number || data.to_number}`, "success", "📞");
-        }
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
 
-        if (data.event === "call_update") {
-          setActiveCall(prev => prev ? { ...prev, ...data } : null);
-        }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
 
-        if (data.event === "call_status" && ["completed","failed","no-answer"].includes(data.status)) {
-          setActiveCall(null);
-          addToast(`Call ${data.status} (${data.duration}s)`, "warning", "📵");
-          loadData();
-        }
+    /* Top bar */
+    .topbar {
+      height: 52px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-        if (data.event === "followup_created") {
-          loadData();
-          if (data.auto_resolved) {
-            addToast(`Auto-resolved: ${data.message}`, "success", "⚡");
-          } else {
-            addToast(`Follow-up scheduled: ${data.callback_dt}`, "warning", "📅");
-          }
+    .logo {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .logo span {
+      color: var(--text);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stat-pill {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .stat-pill .val {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* Main grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      height: calc(100vh - 52px - 70px);
+    }
+
+    .panel {
+      background: var(--bg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .panel-badge {
+      margin-left: auto;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--accent);
+    }
+
+    .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    /* Live call */
+    .call-active {
+      border-left: 2px solid var(--green);
+    }
+
+    .call-banner {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .call-timer {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .caller-num {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    .direction-badge {
+      margin-left: auto;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .dir-inbound {
+      background: #00d4ff22;
+      color: var(--accent);
+      border: 1px solid #00d4ff44;
+    }
+
+    .dir-outbound {
+      background: #ff6b3522;
+      color: var(--accent2);
+      border: 1px solid #ff6b3544;
+    }
+
+    .transcript-area {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.7;
+      min-height: 80px;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .transcript-cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--accent);
+      animation: blink 1s infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    .no-call {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .no-call-icon {
+      font-size: 2.5rem;
+      opacity: 0.3;
+    }
+
+    .no-call-text {
+      font-size: 0.8rem;
+    }
+
+    /* Outbound form */
+    .outbound-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .input-dark {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      outline: none;
+    }
+
+    .input-dark:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .btn-accent:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.65rem;
+    }
+
+    /* Analysis cards */
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .metric-conf {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .conf-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+
+    .conf-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    /* Intent colors */
+    .intent-color {
+      color: #a78bfa;
+    }
+
+    .urgency-crit {
+      color: var(--red);
+    }
+
+    .urgency-high {
+      color: var(--accent2);
+    }
+
+    .urgency-med {
+      color: var(--yellow);
+    }
+
+    .urgency-low {
+      color: var(--green);
+    }
+
+    .sent-neg {
+      color: var(--red);
+    }
+
+    .sent-neu {
+      color: var(--muted);
+    }
+
+    .sent-pos {
+      color: var(--green);
+    }
+
+    /* RAG panel */
+    .rag-query {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      padding: 8px 10px;
+      background: var(--surface2);
+      border-radius: 6px;
+      margin-bottom: 10px;
+      border-left: 2px solid var(--accent);
+    }
+
+    .rag-answer {
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    .source-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+    }
+
+    .source-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .source-name {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .score-badge {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--green);
+      background: #00e67615;
+      border: 1px solid #00e67630;
+      border-radius: 10px;
+      padding: 1px 6px;
+    }
+
+    .source-text {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* Follow-up scheduler */
+    .followup-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+
+    .followup-item:hover {
+      border-color: var(--accent);
+    }
+
+    .followup-item.overdue {
+      border-color: var(--red);
+      background: #ff3d5708;
+    }
+
+    .followup-item.auto {
+      border-color: var(--green);
+      background: #00e67608;
+    }
+
+    .fu-left {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .fu-case {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      margin-bottom: 3px;
+    }
+
+    .fu-intent {
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .fu-meta {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .fu-time {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--yellow);
+    }
+
+    .fu-auto {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--green);
+    }
+
+    .fu-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+    }
+
+    .urgency-chip {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.62rem;
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+
+    /* Analytics */
+    .analytics-top {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .kpi-val {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .kpi-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .kpi-alert {
+      color: var(--red) !important;
+    }
+
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .chart-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .chart-title {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    /* Case history */
+    .case-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .case-row:hover {
+      border-color: var(--accent);
+    }
+
+    .case-ref {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      min-width: 120px;
+    }
+
+    .case-num {
+      font-size: 0.78rem;
+      color: var(--muted);
+      flex: 1;
+    }
+
+    .case-status {
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.62rem;
+      font-family: var(--mono);
+      font-weight: 600;
+    }
+
+    .st-open {
+      background: #00d4ff18;
+      color: var(--accent);
+      border: 1px solid #00d4ff33;
+    }
+
+    .st-progress {
+      background: #ffd60018;
+      color: var(--yellow);
+      border: 1px solid #ffd60033;
+    }
+
+    .st-resolved {
+      background: #00e67618;
+      color: var(--green);
+      border: 1px solid #00e67633;
+    }
+
+    .st-closed {
+      background: #64748b18;
+      color: var(--muted);
+      border: 1px solid #64748b33;
+    }
+
+    /* Notification toast */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      min-width: 260px;
+      animation: slideIn 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toast.success {
+      border-color: var(--green);
+    }
+
+    .toast.warning {
+      border-color: var(--yellow);
+    }
+
+    .toast.error {
+      border-color: var(--red);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 24px;
+      font-size: 0.78rem;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 8px 0;
+    }
+
+    /* Agent hub banner */
+    .hub-banner {
+      background: linear-gradient(135deg, #0f1f3d 0%, #1a2235 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .hub-left {
+      flex: 1;
+    }
+
+    .hub-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1px;
+    }
+
+    .hub-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* Agent card */
+    .agent-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 14px;
+      min-width: 220px;
+    }
+
+    .agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--bg);
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .agent-online {
+      position: absolute;
+      bottom: 1px;
+      right: 1px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--surface2);
+    }
+
+    .agent-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .agent-since {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .agent-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ffd600, #ff6b35);
+      color: var(--bg);
+      border-radius: 10px;
+      padding: 1px 7px;
+      margin-left: 4px;
+    }
+
+    .stars {
+      color: #ffd600;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    /* Performance metrics row */
+    .perf-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .perf-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+
+    .perf-icon {
+      font-size: 0.85rem;
+    }
+
+    .perf-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .perf-val {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .perf-delta {
+      font-size: 0.62rem;
+      color: var(--green);
+      margin-left: 2px;
+    }
+
+    /* Daily goal bar */
+    .goal-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 14px;
+      min-width: 200px;
+    }
+
+    .goal-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .goal-bar-wrap {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .goal-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 3px;
+      transition: width 0.8s ease;
+    }
+
+    .goal-pct {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    /* Agent view toggle */
+    .view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .view-toggle-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .toggle-switch {
+      width: 32px;
+      height: 18px;
+      background: var(--border);
+      border-radius: 9px;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .toggle-switch.on {
+      background: var(--accent);
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: white;
+      border-radius: 50%;
+      transition: left 0.2s;
+    }
+
+    .toggle-switch.on .toggle-knob {
+      left: 16px;
+    }
+
+    /* Start Call button */
+    .btn-start-call {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-start-call:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px #00d4ff44;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 380px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-note {
+      background: #ffd60015;
+      border: 1px solid #ffd60033;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.75rem;
+      color: #ffd600;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+    // Charts replaced with pure CSS — no Recharts needed
+
+    const API = "http://localhost:8000";
+    const WS_URL = "ws://localhost:8000/ws/0";
+
+    // ── Helpers ──────────────────────────────────────────────────────────────────
+    const apiFetch = (path, opts = {}) => fetch(API + path, opts).then(r => r.json());
+
+    const urgencyColor = u => ({ Critical: "#ff3d57", High: "#ff6b35", Medium: "#ffd600", Low: "#00e676" }[u] || "#64748b");
+    const sentColor = s => ({ Negative: "#ff3d57", Neutral: "#64748b", Positive: "#00e676" }[s] || "#64748b");
+    const statusClass = s => ({ Open: "st-open", "In Progress": "st-progress", Resolved: "st-resolved", Closed: "st-closed" }[s] || "st-open");
+
+    function useInterval(cb, delay) {
+      const saved = useRef(cb);
+      useEffect(() => { saved.current = cb; }, [cb]);
+      useEffect(() => {
+        if (!delay) return;
+        const id = setInterval(() => saved.current(), delay);
+        return () => clearInterval(id);
+      }, [delay]);
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────────────────────
+    function ToastContainer({ toasts }) {
+      return (
+        <div className="toast-container">
+          {toasts.map(t => (
+            <div key={t.id} className={`toast ${t.type}`}>
+              <span>{t.icon}</span>
+              <span>{t.message}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // ── Live Call Panel ───────────────────────────────────────────────────────────
+    function LiveCallPanel({ activeCall, onOutbound, onEndCall, onDemoResult }) {
+      const [toNumber, setToNumber] = useState("");
+      const [seconds, setSeconds] = useState(0);
+      const [demoState, setDemoState] = useState("idle"); // idle | recording | processing
+      const [demoSecs, setDemoSecs] = useState(0);
+      const mediaRef = useRef(null);
+      const chunksRef = useRef([]);
+
+      useInterval(() => { if (activeCall) setSeconds(s => s + 1); }, 1000);
+      useInterval(() => { if (demoState === "recording") setDemoSecs(s => s + 1); }, 1000);
+      useEffect(() => { if (activeCall) setSeconds(0); }, [activeCall?.call_id]);
+
+      const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
+      const startDemo = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const mr = new MediaRecorder(stream, { mimeType: "audio/webm" });
+          chunksRef.current = [];
+          mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+          mr.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            setDemoState("processing");
+            setDemoSecs(0);
+            const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+            const fd = new FormData();
+            fd.append("audio", blob, "demo.webm");
+            try {
+              const res = await fetch(API + "/api/demo", { method: "POST", body: fd });
+              const data = await res.json();
+              onDemoResult(data);
+            } catch (e) {
+              console.error("Demo error:", e);
+            }
+            setDemoState("idle");
+          };
+          mediaRef.current = mr;
+          mr.start();
+          setDemoState("recording");
+          setDemoSecs(0);
+        } catch (e) {
+          alert("Microphone access denied. Please allow mic access and try again.");
         }
       };
 
-      ws.onclose = () => setTimeout(connect, 3000);  // reconnect
-    };
-    connect();
-    return () => wsRef.current?.close();
-  }, []);
+      const stopDemo = () => {
+        if (mediaRef.current && mediaRef.current.state === "recording") {
+          mediaRef.current.stop();
+        }
+      };
 
-  const handleOutbound = async (number) => {
-    if (!number) return;
-    try {
-      await apiFetch("/api/call/outbound", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ to_number: number })
-      });
-      addToast(`Outbound call initiated to ${number}`, "success", "📤");
-    } catch(e) {
-      addToast("Failed to initiate call", "error", "❌");
-    }
-  };
-
-  const handleEndCall = async (callId) => {
-    const call = await apiFetch(`/api/calls/${callId}`);
-    if (call?.call_sid) {
-      await apiFetch("/api/call/end", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({call_sid: call.call_sid})
-      });
-    }
-    setActiveCall(null);
-  };
-
-  const handleUpdateStatus = (id, status) => {
-    setFollowups(prev => prev.map(f => f.id === id ? {...f, status} : f));
-  };
-
-  const overdue = followups.filter(f => f.status==="Pending" && new Date(f.callback_dt) < new Date()).length;
-
-  return (
-    <>
-      <div className="topbar">
-        <span className="logo">CLAIM<span>DESK</span> AI</span>
-        <div className="status-dot"/>
-        <div className="topbar-right">
-          {overdue > 0 && (
-            <div className="stat-pill" style={{borderColor:"#ff3d5744"}}>
-              <span style={{color:"var(--red)"}}>⚠</span>
-              <span className="val" style={{color:"var(--red)"}}>{overdue}</span>
-              <span style={{color:"var(--muted)"}}>overdue</span>
-            </div>
-          )}
-          <div className="stat-pill">
-            <span>calls</span><span className="val">{analytics?.total_calls ?? "—"}</span>
+      return (
+        <div className={`panel ${activeCall ? "call-active" : ""}`}>
+          <div className="panel-header">
+            <span className="panel-title">📞 Live Call</span>
+            {activeCall && <div className="status-dot" style={{ marginLeft: 6 }} />}
+            {activeCall && <span className="panel-badge">LIVE</span>}
+            {demoState === "recording" && <span className="panel-badge" style={{ background: "#ff3d5722", color: "var(--red)", borderColor: "var(--red)" }}>● REC</span>}
+            {demoState === "processing" && <span className="panel-badge" style={{ background: "#ffd60022", color: "var(--yellow)" }}>⏳ PROCESSING</span>}
           </div>
-          <div className="stat-pill">
-            <span>cases</span><span className="val">{analytics?.open_cases ?? "—"} open</span>
-          </div>
-          <div className="stat-pill" style={{borderColor:"#00e67644"}}>
-            <span>⚡</span>
-            <span className="val" style={{color:"var(--green)"}}>{analytics?.auto_resolved ?? 0}</span>
-            <span style={{color:"var(--muted)"}}>auto-resolved</span>
+          <div className="panel-body">
+            {activeCall ? (
+              <>
+                <div className="call-banner">
+                  <span className="call-timer">{fmt(seconds)}</span>
+                  <div>
+                    <div className="caller-num">{activeCall.caller_number || activeCall.to_number}</div>
+                    <div style={{ fontSize: "0.65rem", color: "var(--muted)" }}>Case: {activeCall.case_ref || "—"}</div>
+                  </div>
+                  <span className={`direction-badge dir-${activeCall.direction}`}>{activeCall.direction}</span>
+                </div>
+                <div style={{ marginBottom: 6, fontSize: "0.7rem", color: "var(--muted)", fontFamily: "var(--mono)" }}>TRANSCRIPT</div>
+                <div className="transcript-area">
+                  {activeCall.transcript || "Waiting for speech..."}
+                  {!activeCall.transcript && <span className="transcript-cursor" />}
+                </div>
+                <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+                  <button className="btn btn-danger btn-sm" onClick={() => onEndCall(activeCall.call_id)}>■ End Call</button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* ── DEMO MIC SECTION ── */}
+                <div style={{
+                  background: "var(--surface2)", border: "1px solid var(--border)",
+                  borderRadius: 10, padding: "16px 14px", marginBottom: 12,
+                }}>
+                  <div style={{ fontSize: "0.65rem", color: "var(--muted)", fontFamily: "var(--mono)", marginBottom: 10, letterSpacing: "0.1em" }}>
+                    🎙 DEMO MODE — BROWSER MIC
+                  </div>
+
+                  {/* Big mic button */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                    <button
+                      onClick={demoState === "idle" ? startDemo : stopDemo}
+                      style={{
+                        width: 70, height: 70,
+                        borderRadius: "50%",
+                        border: "none",
+                        background: demoState === "recording"
+                          ? "var(--red)"
+                          : demoState === "processing"
+                            ? "var(--yellow)"
+                            : "linear-gradient(135deg, var(--accent), #6366f1)",
+                        cursor: demoState === "processing" ? "default" : "pointer",
+                        fontSize: "1.8rem",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        boxShadow: demoState === "recording"
+                          ? "0 0 0 8px #ff3d5730, 0 0 0 16px #ff3d5715"
+                          : "0 4px 20px #00d4ff33",
+                        transition: "all 0.2s",
+                        animation: demoState === "recording" ? "pulse 1.5s infinite" : "none",
+                      }}
+                    >
+                      {demoState === "idle" ? "🎤" :
+                        demoState === "recording" ? "⏹" : "⏳"}
+                    </button>
+
+                    <div style={{ textAlign: "center" }}>
+                      {demoState === "idle" && (
+                        <div style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
+                          Click to start recording<br />
+                          <span style={{ fontSize: "0.68rem", color: "var(--muted)", opacity: 0.7 }}>
+                            Speak your query, click ⏹ to stop
+                          </span>
+                        </div>
+                      )}
+                      {demoState === "recording" && (
+                        <div style={{ fontSize: "0.78rem", color: "var(--red)", fontFamily: "var(--mono)", fontWeight: 600 }}>
+                          Recording... {fmt(demoSecs)}<br />
+                          <span style={{ fontSize: "0.68rem", fontWeight: 400, color: "var(--muted)" }}>Click ⏹ when done speaking</span>
+                        </div>
+                      )}
+                      {demoState === "processing" && (
+                        <div style={{ fontSize: "0.78rem", color: "var(--yellow)" }}>
+                          Running Whisper → BERT → RAG...<br />
+                          <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>This may take a few seconds</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="divider" />
+                <div style={{ fontSize: "0.7rem", color: "var(--muted)", marginBottom: 6, fontFamily: "var(--mono)" }}>
+                  TWILIO OUTBOUND CALLBACK
+                </div>
+                <div className="outbound-form">
+                  <input
+                    className="input-dark"
+                    placeholder="+91xxxxxxxxxx"
+                    value={toNumber}
+                    onChange={e => setToNumber(e.target.value)}
+                  />
+                  <button className="btn btn-accent" onClick={() => { onOutbound(toNumber); setToNumber(""); }}>
+                    Call
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </div>
+      );
+    }
 
-      <div className="grid">
-        <LiveCallPanel  activeCall={activeCall} onOutbound={handleOutbound} onEndCall={handleEndCall} />
-        <AnalysisPanel  call={activeCall} />
-        <KnowledgePanel call={activeCall} />
-        <SchedulerPanel followups={followups} onUpdateStatus={handleUpdateStatus} addToast={addToast} />
-        <AnalyticsPanel analytics={analytics} />
-        <CaseHistoryPanel cases={cases} />
-      </div>
+    // ── Analysis Panel ────────────────────────────────────────────────────────────
+    function AnalysisPanel({ call }) {
+      if (!call || !call.intent) {
+        return (
+          <div className="panel">
+            <div className="panel-header"><span className="panel-title">🧠 Analysis</span></div>
+            <div className="panel-body">
+              <div className="empty-state">Analysis appears here during an active call</div>
+            </div>
+          </div>
+        );
+      }
 
-      <ToastContainer toasts={toasts} />
-    </>
-  );
-}
+      const uc = urgencyColor(call.urgency);
+      const sc = sentColor(call.sentiment);
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
+      const cards = [
+        { label: "INTENT", value: call.intent?.replace(/_/g, " "), conf: call.conf_intent, color: "#a78bfa" },
+        { label: "URGENCY", value: call.urgency, conf: call.conf_urgency, color: uc },
+        { label: "SENTIMENT", value: call.sentiment, conf: call.conf_sentiment, color: sc },
+        {
+          label: "SLA",
+          value: ({ Critical: "2 hrs", High: "6 hrs", Medium: "24 hrs", Low: "48 hrs" }[call.urgency] || "—"),
+          conf: 1, color: "#00d4ff"
+        },
+      ];
+
+      return (
+        <div className="panel">
+          <div className="panel-header">
+            <span className="panel-title">🧠 Analysis</span>
+            {call.call_id && <span className="panel-badge">Call #{call.call_id}</span>}
+          </div>
+          <div className="panel-body">
+            <div className="analysis-grid">
+              {cards.map(c => (
+                <div className="metric-card" key={c.label}>
+                  <div className="metric-label">{c.label}</div>
+                  <div className="metric-value" style={{ color: c.color }}>{c.value || "—"}</div>
+                  <div className="metric-conf">{c.conf ? `${Math.round(c.conf * 100)}% confidence` : ""}</div>
+                  {c.conf < 1 && (
+                    <div className="conf-bar">
+                      <div className="conf-fill" style={{ width: `${(c.conf || 0) * 100}%`, background: c.color }} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Knowledge Base Panel ──────────────────────────────────────────────────────
+    function KnowledgePanel({ call }) {
+      if (!call?.rag_answer) {
+        return (
+          <div className="panel">
+            <div className="panel-header"><span className="panel-title">📚 Knowledge Base</span></div>
+            <div className="panel-body">
+              <div className="empty-state">RAG results appear here when a call is active</div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="panel">
+          <div className="panel-header">
+            <span className="panel-title">📚 Knowledge Base</span>
+            <span className="panel-badge">{call.sources?.length || 0} sources</span>
+          </div>
+          <div className="panel-body">
+            {call.transcript && (
+              <div className="rag-query">❝ {call.transcript.slice(0, 120)}{call.transcript.length > 120 ? "…" : ""}</div>
+            )}
+            <div className="rag-answer">{call.rag_answer}</div>
+            {call.sources?.length > 0 && (
+              <>
+                <div style={{ fontSize: "0.65rem", color: "var(--muted)", fontFamily: "var(--mono)", marginBottom: 6 }}>
+                  RETRIEVED SOURCES
+                </div>
+                {call.sources.map((s, i) => (
+                  <div className="source-card" key={i}>
+                    <div className="source-header">
+                      <span className="source-name">📄 {s.source_pdf}</span>
+                      <span className="score-badge">{(s.score * 100).toFixed(0)}%</span>
+                    </div>
+                    <div className="source-text">{s.text?.slice(0, 180)}…</div>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Follow-up Scheduler Panel ─────────────────────────────────────────────────
+    function SchedulerPanel({ followups, onUpdateStatus, addToast }) {
+      const now = new Date();
+      const sorted = [...followups].sort((a, b) => new Date(a.callback_dt) - new Date(b.callback_dt));
+
+      const isOverdue = fu => fu.status === "Pending" && new Date(fu.callback_dt) < now;
+
+      const handleResolve = async (id) => {
+        await apiFetch(`/api/followups/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Resolved" })
+        });
+        onUpdateStatus(id, "Resolved");
+        addToast("Follow-up resolved ✓", "success", "✅");
+      };
+
+      return (
+        <div className="panel">
+          <div className="panel-header">
+            <span className="panel-title">📅 Follow-up Queue</span>
+            <span className="panel-badge">{followups.filter(f => f.status === "Pending").length} pending</span>
+          </div>
+          <div className="panel-body">
+            {sorted.length === 0 && <div className="empty-state">No follow-ups scheduled</div>}
+            {sorted.map(fu => (
+              <div key={fu.id} className={`followup-item ${isOverdue(fu) ? "overdue" : ""} ${fu.auto_resolved ? "auto" : ""}`}>
+                <div className="fu-left">
+                  <div className="fu-case">{fu.case_ref} · {fu.caller_number}</div>
+                  <div className="fu-intent">{fu.intent?.replace(/_/g, " ") || "—"}</div>
+                  <div className="fu-meta">{fu.transcript_summary?.slice(0, 80)}…</div>
+                  {fu.auto_resolved
+                    ? <div className="fu-auto">⚡ Auto-resolved: {fu.auto_action}</div>
+                    : <div className="fu-time">
+                      📅 {fu.callback_dt?.slice(0, 16) || "—"}
+                      {isOverdue(fu) && <span style={{ color: "var(--red)", marginLeft: 6 }}>OVERDUE</span>}
+                    </div>
+                  }
+                </div>
+                <div className="fu-actions">
+                  <span className="urgency-chip" style={{
+                    background: urgencyColor(fu.urgency) + "22",
+                    color: urgencyColor(fu.urgency),
+                    border: `1px solid ${urgencyColor(fu.urgency)}44`
+                  }}>{fu.urgency}</span>
+                  {fu.status === "Pending" && !fu.auto_resolved && (
+                    <button className="btn btn-accent btn-sm" onClick={() => handleResolve(fu.id)}>
+                      Resolve
+                    </button>
+                  )}
+                  {fu.status === "Resolved" && (
+                    <span style={{ fontSize: "0.65rem", color: "var(--green)" }}>✓ Done</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Analytics Panel — pure CSS charts, no Recharts ───────────────────────────
+    function CSSBar({ label, value, max, color }) {
+      const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+      return (
+        <div style={{ marginBottom: 6 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+            <span style={{
+              fontSize: "0.68rem", color: "var(--muted)", fontFamily: "var(--mono)",
+              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "70%"
+            }}>
+              {label}
+            </span>
+            <span style={{ fontSize: "0.68rem", color: color, fontFamily: "var(--mono)" }}>{value}</span>
+          </div>
+          <div style={{ height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", width: `${pct}%`, background: color, borderRadius: 3,
+              transition: "width 0.6s ease"
+            }} />
+          </div>
+        </div>
+      );
+    }
+
+    function DonutChart({ data }) {
+      const total = data.reduce((s, d) => s + d.value, 0);
+      if (!total) return <div className="empty-state" style={{ padding: 8 }}>No data</div>;
+      let offset = 0;
+      const r = 40, cx = 60, cy = 55, circumference = 2 * Math.PI * r;
+      const slices = data.map(d => {
+        const pct = d.value / total;
+        const dash = pct * circumference;
+        const gap = circumference - dash;
+        const slice = { ...d, dash, gap, offset };
+        offset += dash;
+        return slice;
+      });
+      return (
+        <svg width="120" height="110" style={{ overflow: "visible" }}>
+          {slices.map((s, i) => (
+            <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+              stroke={s.color} strokeWidth={14}
+              strokeDasharray={`${s.dash} ${s.gap}`}
+              strokeDashoffset={-s.offset}
+              transform={`rotate(-90 ${cx} ${cy})`} />
+          ))}
+          <circle cx={cx} cy={cy} r={26} fill="var(--bg)" />
+          <text x={cx} y={cy + 4} textAnchor="middle"
+            style={{ fontSize: 11, fill: "var(--text)", fontFamily: "var(--mono)", fontWeight: 600 }}>
+            {total}
+          </text>
+        </svg>
+      );
+    }
+
+    function AnalyticsPanel({ analytics }) {
+      if (!analytics) return (
+        <div className="panel">
+          <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
+          <div className="panel-body"><div className="empty-state">Loading...</div></div>
+        </div>
+      );
+
+      const kpis = [
+        { label: "Total Calls", val: analytics.total_calls, alert: false },
+        { label: "Open Cases", val: analytics.open_cases, alert: analytics.open_cases > 20 },
+        { label: "Pending FU", val: analytics.pending_followups, alert: analytics.pending_followups > 10 },
+        { label: "⚡ Auto-Res", val: analytics.auto_resolved, alert: false },
+      ];
+
+      const intentMax = Math.max(1, ...(analytics.intent_dist || []).map(d => d.cnt));
+      const intentColors = ["#00d4ff", "#a78bfa", "#ff6b35", "#00e676", "#ffd600", "#ff3d57", "#38bdf8", "#f472b6", "#34d399", "#fb923c"];
+
+      const sentDonut = (analytics.sentiment_dist || []).map(d => ({
+        label: d.sentiment, value: d.cnt, color: sentColor(d.sentiment)
+      }));
+
+      return (
+        <div className="panel">
+          <div className="panel-header"><span className="panel-title">📊 Analytics</span></div>
+          <div className="panel-body">
+            <div className="analytics-top">
+              {kpis.map(k => (
+                <div className="kpi-card" key={k.label}>
+                  <div className={`kpi-val ${k.alert ? "kpi-alert" : ""}`}>{k.val ?? "—"}</div>
+                  <div className="kpi-label">{k.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="charts-row">
+              <div className="chart-wrap">
+                <div className="chart-title">Intent Distribution</div>
+                {(analytics.intent_dist || []).map((d, i) => (
+                  <CSSBar key={i}
+                    label={d.intent?.replace(/_/g, " ")}
+                    value={d.cnt}
+                    max={intentMax}
+                    color={intentColors[i % intentColors.length]}
+                  />
+                ))}
+                {(!analytics.intent_dist?.length) && <div className="empty-state" style={{ padding: 8 }}>No data yet</div>}
+              </div>
+              <div className="chart-wrap">
+                <div className="chart-title">Sentiment</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <DonutChart data={sentDonut} />
+                  <div>
+                    {sentDonut.map((d, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 5 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: d.color, flexShrink: 0 }} />
+                        <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>{d.label}</span>
+                        <span style={{ fontSize: "0.68rem", color: d.color, fontFamily: "var(--mono)", marginLeft: "auto" }}>{d.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ── Case History Panel ────────────────────────────────────────────────────────
+    function CaseHistoryPanel({ cases }) {
+      const [search, setSearch] = useState("");
+      const filtered = cases.filter(c =>
+        c.case_ref?.toLowerCase().includes(search.toLowerCase()) ||
+        c.caller_number?.includes(search)
+      );
+
+      return (
+        <div className="panel">
+          <div className="panel-header">
+            <span className="panel-title">🗂 Case History</span>
+            <span className="panel-badge">{cases.length} cases</span>
+          </div>
+          <div className="panel-body">
+            <input
+              className="input-dark"
+              style={{ width: "100%", marginBottom: 10 }}
+              placeholder="Search by case ref or number..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {filtered.length === 0 && <div className="empty-state">No cases found</div>}
+            {filtered.map(c => (
+              <div className="case-row" key={c.id}>
+                <span className="case-ref">{c.case_ref}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="case-num">{c.caller_number}</div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--muted)" }}>
+                    {c.last_intent?.replace(/_/g, " ") || "—"} · {c.total_calls} call{c.total_calls !== 1 ? "s" : ""}
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                  <span className={`case-status ${statusClass(c.status)}`}>{c.status}</span>
+                  <span style={{
+                    fontSize: "0.62rem", fontFamily: "var(--mono)",
+                    color: sentColor(c.last_sentiment), opacity: 0.8
+                  }}>{c.last_sentiment || ""}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Agent Hub Banner ──────────────────────────────────────────────────────────
+    function AgentHub({ analytics, agentView, onToggleView, onStartCall }) {
+      const resolved = analytics?.total_calls ?? 0;
+      const dailyGoal = 35;
+      const goalPct = Math.min(100, Math.round((resolved / dailyGoal) * 100));
+
+      const perf = [
+        { icon: "⏱", label: "Avg Call Duration", val: "4:30", delta: "+5%" },
+        { icon: "👍", label: "Satisfaction", val: "92%", delta: "+2%" },
+        { icon: "📈", label: "Resolution Rate", val: `${goalPct}%`, delta: "+3%" },
+      ];
+
+      return (
+        <div className="hub-banner">
+          {/* Left: title */}
+          <div className="hub-left">
+            <div className="hub-title">🏥 AI-Powered Agent Assistance Hub</div>
+            <div className="hub-sub">Enhance your customer interactions with AI-driven insights</div>
+          </div>
+
+          {/* Agent card */}
+          <div className="agent-card">
+            <div className="agent-avatar">
+              S
+              <div className="agent-online" />
+            </div>
+            <div>
+              <div className="agent-name">
+                Srinidhi
+                <span className="agent-badge">⭐ Top Agent</span>
+              </div>
+              <div className="agent-since">🕐 Active since 08:30 AM</div>
+              <div className="stars">★★★★★</div>
+            </div>
+            <div style={{ marginLeft: 8, textAlign: "right" }}>
+              <div style={{ fontSize: "0.65rem", color: "var(--green)", fontWeight: 600 }}>● Available</div>
+              <div style={{ fontSize: "0.65rem", color: "var(--muted)" }}>{resolved} Calls Today</div>
+            </div>
+          </div>
+
+          {/* Performance stats */}
+          <div className="perf-row">
+            {perf.map(p => (
+              <div className="perf-stat" key={p.label}>
+                <span className="perf-icon">{p.icon}</span>
+                <div>
+                  <div className="perf-label">{p.label}</div>
+                  <div>
+                    <span className="perf-val">{p.val}</span>
+                    <span className="perf-delta">{p.delta}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Daily goal */}
+          <div className="goal-wrap">
+            <div>
+              <div className="goal-label">Daily Goal: 85%</div>
+              <div className="goal-bar-wrap" style={{ marginTop: 4 }}>
+                <div className="goal-bar-fill" style={{ width: `${goalPct}%` }} />
+              </div>
+            </div>
+            <div className="goal-pct">{resolved}/{dailyGoal}</div>
+          </div>
+
+          {/* Agent view toggle */}
+          <div className="view-toggle" onClick={onToggleView}>
+            <span style={{ fontSize: "0.85rem" }}>🎧</span>
+            <span className="view-toggle-label">Agent View</span>
+            <div className={`toggle-switch ${agentView ? "on" : ""}`}>
+              <div className="toggle-knob" />
+            </div>
+          </div>
+
+          {/* Start Call */}
+          <button className="btn-start-call" onClick={onStartCall}>
+            📞 Start Call ✨
+          </button>
+        </div>
+      );
+    }
+
+    // ── Start Call Modal ──────────────────────────────────────────────────────────
+    function StartCallModal({ onClose, onCall }) {
+      const [number, setNumber] = React.useState("");
+      return (
+        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal" style={{ position: "relative" }}>
+            <button className="modal-close" onClick={onClose}>✕</button>
+            <div className="modal-title">📞 Enter Phone Number</div>
+            <div className="modal-note">
+              ⚠️ <strong>NOTE:</strong> As we are using Twilio for call functionality,
+              free-tier limitations prevent direct calls to unverified numbers.
+              Please use a verified number for testing.
+            </div>
+            <input
+              className="input-dark"
+              style={{ width: "100%", marginBottom: 12, fontSize: "0.9rem", padding: "10px 14px" }}
+              placeholder="+91XXXXXXXXXX"
+              value={number}
+              onChange={e => setNumber(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && number && (onCall(number), onClose())}
+              autoFocus
+            />
+            <button
+              className="btn-start-call"
+              style={{ width: "100%", justifyContent: "center" }}
+              onClick={() => { if (number) { onCall(number); onClose(); } }}
+            >
+              📞 Start Call ✨
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // ── App root ──────────────────────────────────────────────────────────────────
+    function App() {
+      const [activeCall, setActiveCall] = useState(null);
+      const [followups, setFollowups] = useState([]);
+      const [analytics, setAnalytics] = useState(null);
+      const [cases, setCases] = useState([]);
+      const [toasts, setToasts] = useState([]);
+      const [agentView, setAgentView] = useState(true);
+      const [showCallModal, setShowCallModal] = useState(false);
+      const wsRef = useRef(null);
+
+      const addToast = useCallback((message, type = "success", icon = "ℹ️") => {
+        const id = Date.now();
+        setToasts(t => [...t, { id, message, type, icon }]);
+        setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
+      }, []);
+
+      // Load initial data
+      const loadData = useCallback(async () => {
+        try {
+          const [fu, an, cs] = await Promise.all([
+            apiFetch("/api/followups"),
+            apiFetch("/api/analytics"),
+            apiFetch("/api/cases"),
+          ]);
+          setFollowups(fu);
+          setAnalytics(an);
+          setCases(cs);
+        } catch (e) {
+          console.error("Data load error:", e);
+        }
+      }, []);
+
+      useEffect(() => { loadData(); }, []);
+      useInterval(loadData, 15000);  // refresh every 15s
+
+      // WebSocket for live events
+      useEffect(() => {
+        const connect = () => {
+          const ws = new WebSocket(WS_URL);
+          wsRef.current = ws;
+
+          ws.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+
+            if (data.event === "new_call") {
+              setActiveCall({ ...data, transcript: "", rag_answer: "", sources: [] });
+              addToast(`New ${data.direction} call from ${data.caller_number || data.to_number}`, "success", "📞");
+            }
+
+            if (data.event === "call_update") {
+              setActiveCall(prev => prev ? { ...prev, ...data } : null);
+            }
+
+            if (data.event === "call_status" && ["completed", "failed", "no-answer"].includes(data.status)) {
+              setActiveCall(null);
+              addToast(`Call ${data.status} (${data.duration}s)`, "warning", "📵");
+              loadData();
+            }
+
+            if (data.event === "followup_created") {
+              loadData();
+              if (data.auto_resolved) {
+                addToast(`Auto-resolved: ${data.message}`, "success", "⚡");
+              } else {
+                addToast(`Follow-up scheduled: ${data.callback_dt}`, "warning", "📅");
+              }
+            }
+          };
+
+          ws.onclose = () => setTimeout(connect, 3000);  // reconnect
+        };
+        connect();
+        return () => wsRef.current?.close();
+      }, []);
+
+      const handleOutbound = async (number) => {
+        if (!number) return;
+        try {
+          await apiFetch("/api/call/outbound", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to_number: number })
+          });
+          addToast(`Outbound call initiated to ${number}`, "success", "📤");
+        } catch (e) {
+          addToast("Failed to initiate call", "error", "❌");
+        }
+      };
+
+      const handleEndCall = async (callId) => {
+        const call = await apiFetch(`/api/calls/${callId}`);
+        if (call?.call_sid) {
+          await apiFetch("/api/call/end", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ call_sid: call.call_sid })
+          });
+        }
+        setActiveCall(null);
+      };
+
+      const handleDemoResult = useCallback((data) => {
+        if (data.error) { addToast(data.error, "error", "❌"); return; }
+        // Simulate an active call result on the dashboard
+        setActiveCall({
+          call_id: data.call_id || "demo",
+          direction: "demo",
+          caller_number: "Demo Mode",
+          case_ref: data.case_ref || "DEMO",
+          transcript: data.transcript,
+          rag_answer: data.rag_answer,
+          sources: data.sources || [],
+          intent: data.intent,
+          urgency: data.urgency,
+          sentiment: data.sentiment,
+          conf_intent: data.conf_intent,
+          conf_urgency: data.conf_urgency,
+          conf_sentiment: data.conf_sentiment,
+        });
+        loadData();
+        addToast(`Demo: ${data.intent} · ${data.urgency}`, "success", "🎤");
+        // Speak the RAG answer
+        if (data.rag_answer && window.speechSynthesis) {
+          const utt = new SpeechSynthesisUtterance(data.rag_answer.slice(0, 300));
+          utt.rate = 0.9; utt.lang = "en-IN";
+          window.speechSynthesis.speak(utt);
+        }
+      }, [addToast, loadData]);
+
+      const handleUpdateStatus = (id, status) => {
+        setFollowups(prev => prev.map(f => f.id === id ? { ...f, status } : f));
+      };
+
+      const overdue = followups.filter(f => f.status === "Pending" && new Date(f.callback_dt) < new Date()).length;
+
+      return (
+        <>
+          <div className="topbar">
+            <span className="logo">CLAIM<span>DESK</span> AI</span>
+            <div className="status-dot" />
+            <div className="topbar-right">
+              {overdue > 0 && (
+                <div className="stat-pill" style={{ borderColor: "#ff3d5744" }}>
+                  <span style={{ color: "var(--red)" }}>⚠</span>
+                  <span className="val" style={{ color: "var(--red)" }}>{overdue}</span>
+                  <span style={{ color: "var(--muted)" }}>overdue</span>
+                </div>
+              )}
+              <div className="stat-pill">
+                <span>calls</span><span className="val">{analytics?.total_calls ?? "—"}</span>
+              </div>
+              <div className="stat-pill">
+                <span>cases</span><span className="val">{analytics?.open_cases ?? "—"} open</span>
+              </div>
+              <div className="stat-pill" style={{ borderColor: "#00e67644" }}>
+                <span>⚡</span>
+                <span className="val" style={{ color: "var(--green)" }}>{analytics?.auto_resolved ?? 0}</span>
+                <span style={{ color: "var(--muted)" }}>auto-resolved</span>
+              </div>
+            </div>
+          </div>
+
+          <AgentHub
+            analytics={analytics}
+            agentView={agentView}
+            onToggleView={() => setAgentView(v => !v)}
+            onStartCall={() => setShowCallModal(true)}
+          />
+
+          <div className="grid">
+            <LiveCallPanel activeCall={activeCall} onOutbound={handleOutbound} onEndCall={handleEndCall} onDemoResult={handleDemoResult} />
+            <AnalysisPanel call={activeCall} />
+            <KnowledgePanel call={activeCall} />
+            <SchedulerPanel followups={followups} onUpdateStatus={handleUpdateStatus} addToast={addToast} />
+            <AnalyticsPanel analytics={analytics} />
+            <CaseHistoryPanel cases={cases} />
+          </div>
+
+          {showCallModal && (
+            <StartCallModal
+              onClose={() => setShowCallModal(false)}
+              onCall={handleOutbound}
+            />
+          )}
+
+          <ToastContainer toasts={toasts} />
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
+
 </html>
