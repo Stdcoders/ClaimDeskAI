@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
@@ -272,9 +272,10 @@ def get_overdue():
 @app.patch("/api/followups/{followup_id}")
 def update_followup(followup_id: int, body: dict):
     status = body.get("status")
+    notes  = body.get("notes", "")
     if not status:
         raise HTTPException(400, "status required")
-    db.update_followup_status(followup_id, status)
+    db.update_followup_status(followup_id, status, notes)
     return {"ok": True}
 
 @app.get("/api/analytics")
@@ -316,7 +317,88 @@ async def make_outbound_call(body: OutboundCallRequest):
         raise HTTPException(500, f"Twilio error: {e}")
 
 
-# ── Health check ──────────────────────────────────────────────────────────────
+# ── Demo mode endpoint — browser mic audio ────────────────────────────────────
+
+@app.post("/api/demo")
+async def demo_endpoint(audio: UploadFile):
+    """
+    Receives audio blob from browser mic.
+    Runs full pipeline: Whisper → BERT → RAG → SLA.
+    Returns transcript + classifications + RAG answer.
+    """
+    import tempfile, shutil
+    suffix = ".webm" if "webm" in (audio.content_type or "") else ".wav"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        shutil.copyfileobj(audio.file, tmp)
+        tmp_path = tmp.name
+
+    result = pipe.run_pipeline(tmp_path)
+    os.unlink(tmp_path)
+
+    if "error" in result:
+        return {"error": result["error"]}
+
+    # Create demo call + case record
+    call_id = db.create_call(
+        call_sid      = f"demo-{uuid.uuid4()}",
+        direction     = "demo",
+        caller_number = "demo-user",
+        called_number = "demo",
+    )
+    db.update_call(call_id,
+        transcript     = result["transcript"],
+        intent         = result["intent"],
+        urgency        = result["urgency"],
+        sentiment      = result["sentiment"],
+        conf_intent    = result["conf_intent"],
+        conf_urgency   = result["conf_urgency"],
+        conf_sentiment = result["conf_sentiment"],
+        rag_context    = result["rag_answer"],
+        status         = "completed",
+    )
+    case, _ = db.get_or_create_case("demo-user")
+
+    # Run SLA engine
+    sla = process_call_outcome(
+        call_id       = call_id,
+        caller_number = "demo-user",
+        case_ref      = case["case_ref"],
+        intent        = result["intent"],
+        urgency       = result["urgency"],
+        sentiment     = result["sentiment"],
+        transcript    = result["transcript"],
+        rag_answer    = result["rag_answer"],
+        twilio_client = None,
+    )
+
+    db.create_followup(
+        case_ref           = case["case_ref"],
+        caller_number      = "demo-user",
+        call_id            = call_id,
+        intent             = result["intent"],
+        urgency            = result["urgency"],
+        sentiment          = result["sentiment"],
+        sla_deadline       = sla["sla_deadline"],
+        callback_dt        = sla.get("callback_dt"),
+        transcript_summary = result["transcript"][:300],
+        auto_resolved      = sla["auto_resolved"],
+        auto_action        = sla.get("auto_action"),
+    )
+
+    db.update_case(case["case_ref"],
+        last_intent    = result["intent"],
+        last_sentiment = result["sentiment"],
+        total_calls    = case["total_calls"] + 1,
+    )
+
+    return {
+        **result,
+        "call_id":    call_id,
+        "case_ref":   case["case_ref"],
+        "sla":        sla,
+    }
+
+
 
 @app.get("/health")
 def health():
