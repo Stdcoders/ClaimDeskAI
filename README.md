@@ -318,10 +318,10 @@ Fine-tuned DistilBERT for 10-class classification:
 
 | Metric | Value |
 |--------|-------|
-| End-to-end latency | ~6-10 seconds (CPU) |
+| End-to-end latency | ~50-60 seconds (CPU) |
 | Whisper transcription | ~2-4s (tiny, int8) |
 | Parallel BERT inference | ~0.5s (3 models simultaneously) |
-| RAG retrieval | ~1-2s |
+| RAG retrieval | ~20-30s |
 | Auto-resolution rate | ~60-70% of routine queries |
 
 ---
